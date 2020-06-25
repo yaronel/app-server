@@ -1,5 +1,7 @@
 package com.appsflyer.af_netty.channel;
 
+import com.appsflyer.af_netty.util.NoopMetricsCollector;
+import com.appsflyer.af_netty.util.MetricsCollector;
 import io.netty.channel.ChannelInboundHandler;
 
 import java.time.Duration;
@@ -12,6 +14,7 @@ public class ChannelConfiguration
   private Duration writeTimeout;
   private ChannelInboundHandler inboundHandler;
   private boolean compress;
+  private MetricsCollector metricsCollector;
   
   public static Builder newBuilder()
   {
@@ -43,6 +46,11 @@ public class ChannelConfiguration
   public boolean isCompress()
   {
     return compress;
+  }
+  
+  public MetricsCollector metricsCollector()
+  {
+    return metricsCollector;
   }
   
   public static class Builder
@@ -84,6 +92,12 @@ public class ChannelConfiguration
       return this;
     }
     
+    public Builder setMetricsCollector(MetricsCollector recorder)
+    {
+      instance.metricsCollector = recorder;
+      return this;
+    }
+    
     public ChannelConfiguration build()
     {
       assertValidState();
@@ -96,6 +110,9 @@ public class ChannelConfiguration
     {
       if (instance.maxContentLength <= 0) {
         instance.maxContentLength = 1048576;
+      }
+      if (instance.metricsCollector == null) {
+        instance.metricsCollector = new NoopMetricsCollector();
       }
       if (instance.inboundHandler == null) {
         throw new IllegalStateException("Missing inbound handler");

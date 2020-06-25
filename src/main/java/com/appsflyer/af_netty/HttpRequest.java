@@ -6,6 +6,7 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.util.Recycler;
 
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -13,19 +14,35 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-public class HttpRequest
+public class HttpRequest implements Recyclable
 {
-  private final FullHttpRequest impl;
-  private final QueryStringDecoder queryDecoder;
-  private final Headers headers;
-  private final Channel channel;
-  
-  public HttpRequest(FullHttpRequest impl, Channel channel)
+  private static final Recycler<HttpRequest> RECYCLER = new Recycler<>()
   {
-    this.impl = impl;
-    this.channel = channel;
-    queryDecoder = new QueryStringDecoder(impl.uri());
-    headers = new Headers(impl.headers());
+    protected HttpRequest newObject(Recycler.Handle<HttpRequest> handle)
+    {
+      return new HttpRequest(handle);
+    }
+  };
+  
+  public static HttpRequest newInstance(FullHttpRequest impl, Channel channel)
+  {
+    HttpRequest instance = RECYCLER.get();
+    instance.impl = impl;
+    instance.channel = channel;
+    instance.queryDecoder = new QueryStringDecoder(impl.uri());
+    instance.headers = Headers.newInstance(impl.headers());
+    return instance;
+  }
+  
+  private final Recycler.Handle<HttpRequest> handle;
+  private FullHttpRequest impl;
+  private QueryStringDecoder queryDecoder;
+  private Headers headers;
+  private Channel channel;
+  
+  private HttpRequest(Recycler.Handle<HttpRequest> handle)
+  {
+    this.handle = handle;
   }
   
   public Headers headers()
@@ -87,5 +104,17 @@ public class HttpRequest
   public int serverPort()
   {
     return ((InetSocketAddress) channel.localAddress()).getPort();
+  }
+  
+  @Override
+  public boolean recycle()
+  {
+    headers.recycle();
+    impl = null;
+    channel = null;
+    queryDecoder = null;
+    headers = null;
+    handle.recycle(this);
+    return true;
   }
 }

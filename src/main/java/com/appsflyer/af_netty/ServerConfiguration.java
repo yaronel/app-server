@@ -1,6 +1,6 @@
 package com.appsflyer.af_netty;
 
-import com.codahale.metrics.MetricRegistry;
+import com.appsflyer.af_netty.util.MetricsCollector;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -8,12 +8,11 @@ import java.util.function.Function;
 
 public class ServerConfiguration
 {
-  private String name;
   private int port;
   private EventLoopConfiguration bossGroupConfig;
   private EventLoopConfiguration childGroupConfig;
   private Function<HttpRequest, HttpResponse> requestHandler;
-  private MetricRegistry metricsRegistry;
+  private MetricsCollector metricsCollector;
   private String host = "localhost";
   private boolean compress = false;
   private Duration connectTimeout = Duration.ofSeconds(30);
@@ -37,11 +36,6 @@ public class ServerConfiguration
   public String host()
   {
     return host;
-  }
-  
-  public String name()
-  {
-    return name;
   }
   
   public boolean isCompress()
@@ -74,9 +68,9 @@ public class ServerConfiguration
     return writeTimeout;
   }
   
-  public MetricRegistry metricsRegistry()
+  public MetricsCollector metricsCollector()
   {
-    return metricsRegistry;
+    return metricsCollector;
   }
   
   public Function<HttpRequest, HttpResponse> requestHandler()
@@ -101,12 +95,6 @@ public class ServerConfiguration
     {
       Objects.requireNonNull(host);
       instance.host = host;
-      return this;
-    }
-    
-    public Builder setName(String name)
-    {
-      instance.name = name;
       return this;
     }
     
@@ -158,10 +146,10 @@ public class ServerConfiguration
       return this;
     }
     
-    public Builder setMetricsRegistry(MetricRegistry metricsRegistry)
+    public Builder setMetricsCollector(MetricsCollector metricsCollector)
     {
-      Objects.requireNonNull(metricsRegistry);
-      instance.metricsRegistry = metricsRegistry;
+      Objects.requireNonNull(metricsCollector);
+      instance.metricsCollector = metricsCollector;
       return this;
     }
     
@@ -175,8 +163,8 @@ public class ServerConfiguration
     
     private void assertValidState()
     {
-      if (instance.metricsRegistry == null) {
-        throw new IllegalStateException("Missing MetricRegistry");
+      if (instance.metricsCollector == null) {
+        throw new IllegalStateException("Missing MetricsCollector");
       }
       if (instance.bossGroupConfig == null) {
         throw new IllegalStateException("Missing boss event loop group configuration");

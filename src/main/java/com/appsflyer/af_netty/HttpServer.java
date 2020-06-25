@@ -1,7 +1,7 @@
 package com.appsflyer.af_netty;
 
-import com.appsflyer.af_netty.channel.HttpChannelInitializer;
 import com.appsflyer.af_netty.channel.ChannelConfiguration;
+import com.appsflyer.af_netty.channel.HttpChannelInitializer;
 import com.appsflyer.af_netty.util.NativeSocketUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -58,10 +58,11 @@ public class HttpServer
     return new HttpChannelInitializer(
         ChannelConfiguration
             .newBuilder()
-            .setInboundHandler(new HttpServerHandler(config.requestHandler()))
+            .setInboundHandler(new HttpServerHandler(config.requestHandler(), config.metricsCollector()))
             .compress(config.isCompress())
             .setReadTimeout(config.readTimeout())
             .setWriteTimeout(config.writeTimeout())
+            .setMetricsCollector(config.metricsCollector())
             .build());
   }
   
@@ -74,13 +75,14 @@ public class HttpServer
   {
     if (serverSocket != null) {
       try {
-        logger.info("Shutting down server ...");
         serverSocket.closeFuture().sync();
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
       } finally {
-        bossGroup.shutdownGracefully();
-        logger.info("Server is down");
+        if (!bossGroup.isShuttingDown() && !bossGroup.isShutdown()) {
+          bossGroup.shutdownGracefully();
+          logger.info("Server is down");
+        }
       }
     }
   }
