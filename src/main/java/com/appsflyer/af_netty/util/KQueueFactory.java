@@ -6,7 +6,7 @@ import io.netty.channel.ServerChannel;
 import io.netty.channel.kqueue.KQueueEventLoopGroup;
 import io.netty.channel.kqueue.KQueueServerSocketChannel;
 
-public class KQueueUtil extends NativeSocketUtil
+public class KQueueFactory extends EventLoopFactory
 {
   @Override
   public EventLoopGroup newEventLoopGroup(EventLoopConfiguration config)
@@ -15,7 +15,7 @@ public class KQueueUtil extends NativeSocketUtil
   }
   
   @Override
-  public Class<? extends ServerChannel> socketChannelClass()
+  public Class<? extends ServerChannel> channelClass()
   {
     return KQueueServerSocketChannel.class;
   }

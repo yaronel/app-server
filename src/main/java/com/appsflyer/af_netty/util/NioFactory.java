@@ -6,7 +6,7 @@ import io.netty.channel.ServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
-public class NioUtil extends NativeSocketUtil
+public class NioFactory extends EventLoopFactory
 {
   @Override
   public EventLoopGroup newEventLoopGroup(EventLoopConfiguration config)
@@ -15,7 +15,7 @@ public class NioUtil extends NativeSocketUtil
   }
   
   @Override
-  public Class<? extends ServerChannel> socketChannelClass()
+  public Class<? extends ServerChannel> channelClass()
   {
     return NioServerSocketChannel.class;
   }

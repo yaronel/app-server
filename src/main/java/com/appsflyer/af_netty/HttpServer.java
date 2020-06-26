@@ -2,7 +2,7 @@ package com.appsflyer.af_netty;
 
 import com.appsflyer.af_netty.channel.ChannelConfiguration;
 import com.appsflyer.af_netty.channel.HttpChannelInitializer;
-import com.appsflyer.af_netty.util.NativeSocketUtil;
+import com.appsflyer.af_netty.util.EventLoopFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -20,22 +20,21 @@ public class HttpServer
   private static final int TCP_CONNECTION_QUEUE_SIZE = 8192;
   
   private final ServerConfiguration config;
-  private final NativeSocketUtil util;
   private final EventLoopGroup bossGroup;
-  private Channel serverSocket;
+  private Channel serverChannel;
   
   public HttpServer(ServerConfiguration config)
   {
     this.config = config;
-    util = NativeSocketUtil.getInstance();
-    bossGroup = util.newEventLoopGroup(config.bossGroupConfig());
+    bossGroup = EventLoopFactory.getInstance().newEventLoopGroup(config.bossGroupConfig());
   }
   
   public void start() throws InterruptedException, UnknownHostException
   {
     InetAddress host = InetAddress.getByName(config.host());
+    var eventLoopFactory = EventLoopFactory.getInstance();
     
-    serverSocket =
+    serverChannel =
         new ServerBootstrap()
             .option(ChannelOption.SO_BACKLOG, TCP_CONNECTION_QUEUE_SIZE)
             /* Good explanation on socket reuse address:
@@ -43,8 +42,8 @@ public class HttpServer
              */
             .option(ChannelOption.SO_REUSEADDR, true)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) config.connectTimeout().toMillis())
-            .group(bossGroup, util.newEventLoopGroup(config.childGroupConfig()))
-            .channel(util.socketChannelClass())
+            .group(bossGroup, eventLoopFactory.newEventLoopGroup(config.childGroupConfig()))
+            .channel(eventLoopFactory.channelClass())
             .childHandler(getChannelInitializer())
             .bind(host, config.port())
             .sync()
@@ -73,9 +72,9 @@ public class HttpServer
    */
   public void awaitTermination()
   {
-    if (serverSocket != null) {
+    if (serverChannel != null) {
       try {
-        serverSocket.closeFuture().sync();
+        serverChannel.closeFuture().sync();
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
       } finally {
@@ -94,7 +93,7 @@ public class HttpServer
   {
     try {
       logger.info("Shutting down server ...");
-      serverSocket.close().await(5, TimeUnit.SECONDS);
+      serverChannel.close().await(5, TimeUnit.SECONDS);
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
     } finally {

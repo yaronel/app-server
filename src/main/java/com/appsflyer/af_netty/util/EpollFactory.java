@@ -6,7 +6,7 @@ import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 
-public class EpollUtil extends NativeSocketUtil
+public class EpollFactory extends EventLoopFactory
 {
   @Override
   public EventLoopGroup newEventLoopGroup(EventLoopConfiguration config)
@@ -15,7 +15,7 @@ public class EpollUtil extends NativeSocketUtil
   }
   
   @Override
-  public Class<? extends ServerChannel> socketChannelClass()
+  public Class<? extends ServerChannel> channelClass()
   {
     return EpollServerSocketChannel.class;
   }

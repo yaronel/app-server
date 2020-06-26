@@ -9,38 +9,25 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.concurrent.ThreadFactory;
 
-public abstract class NativeSocketUtil
+public abstract class EventLoopFactory
 {
-  private static NativeSocketUtil instance;
-  private static final Object mutex = new Object();
+  private static final EventLoopFactory INSTANCE = createInstance();
   
-  public static NativeSocketUtil getInstance()
+  public static EventLoopFactory getInstance()
   {
-    return createOrGetInstance();
+    return INSTANCE;
   }
   
-  private static NativeSocketUtil createOrGetInstance()
-  {
-    if (instance == null) {
-      synchronized (mutex) {
-        if (instance == null) {
-          instance = createInstance();
-        }
-      }
-    }
-    return instance;
-  }
-  
-  private static NativeSocketUtil createInstance()
+  private static EventLoopFactory createInstance()
   {
     if (Epoll.isAvailable()) {
-      return new EpollUtil();
+      return new EpollFactory();
     }
     else if (KQueue.isAvailable()) {
-      return new KQueueUtil();
+      return new KQueueFactory();
     }
     else {
-      return new NioUtil();
+      return new NioFactory();
     }
   }
   
@@ -51,7 +38,7 @@ public abstract class NativeSocketUtil
   
   public abstract EventLoopGroup newEventLoopGroup(EventLoopConfiguration config);
   
-  public abstract Class<? extends ServerChannel> socketChannelClass();
+  public abstract Class<? extends ServerChannel> channelClass();
   
   
 }
