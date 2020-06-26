@@ -10,6 +10,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.util.concurrent.Future;
 
 import java.time.Duration;
 
@@ -45,18 +46,7 @@ public class HttpServerMetricsHandler extends ChannelDuplexHandler
     }
     
     if (msg instanceof LastHttpContent) {
-      promise.addListener(future -> {
-        metricsCollector.recordSendLatency(Duration.ofNanos(System.nanoTime() - sendLatency));
-        if (receiveLatency != 0) {
-          metricsCollector.recordResponseLatency(Duration.ofNanos(System.nanoTime() - receiveLatency));
-        }
-        else {
-          metricsCollector.recordResponseLatency(Duration.ofNanos(System.nanoTime() - sendLatency));
-        }
-        metricsCollector.markSentBytes(bytesSent);
-        metricsCollector.markSuccessHit();
-        bytesSent = 0;
-      });
+      promise.addListener(this::sumMetrics);
     }
     
     ctx.write(msg, promise);
@@ -91,5 +81,19 @@ public class HttpServerMetricsHandler extends ChannelDuplexHandler
   {
     metricsCollector.markErrorHit();
     ctx.fireExceptionCaught(cause);
+  }
+  
+  private void sumMetrics(Future<? super Void> future)
+  {
+    metricsCollector.recordSendLatency(Duration.ofNanos(System.nanoTime() - sendLatency));
+    if (receiveLatency != 0) {
+      metricsCollector.recordResponseLatency(Duration.ofNanos(System.nanoTime() - receiveLatency));
+    }
+    else {
+      metricsCollector.recordResponseLatency(Duration.ofNanos(System.nanoTime() - sendLatency));
+    }
+    metricsCollector.markSentBytes(bytesSent);
+    metricsCollector.markSuccessHit();
+    bytesSent = 0;
   }
 }

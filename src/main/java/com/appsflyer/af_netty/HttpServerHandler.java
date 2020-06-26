@@ -44,6 +44,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter
     
     setHeaders(inboundResponse, outboundResponse);
     
+    inboundResponse.recycle();
     req.release();
     ctx.write(outboundResponse, ctx.voidPromise());
   }
