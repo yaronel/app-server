@@ -55,8 +55,7 @@ public class HttpServer
   private HttpChannelInitializer getChannelInitializer()
   {
     return new HttpChannelInitializer(
-        ChannelConfiguration
-            .newBuilder()
+        new ChannelConfiguration.Builder()
             .setInboundHandler(new HttpServerHandler(config.requestHandler(), config.metricsCollector()))
             .compress(config.isCompress())
             .setReadTimeout(config.readTimeout())

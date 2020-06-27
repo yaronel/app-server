@@ -20,11 +20,6 @@ public class ServerConfiguration
   private Duration readTimeout = Duration.ofSeconds(10);
   private Duration writeTimeout = Duration.ofSeconds(10);
   
-  public static Builder newBuilder()
-  {
-    return new Builder(new ServerConfiguration());
-  }
-  
   private ServerConfiguration()
   {
   }
@@ -84,7 +79,12 @@ public class ServerConfiguration
   {
     private ServerConfiguration instance;
     
-    public Builder(ServerConfiguration instance) {this.instance = instance;}
+    public Builder()
+    {
+      this(new ServerConfiguration());
+    }
+    
+    private Builder(ServerConfiguration instance) {this.instance = instance;}
     
     public Builder setPort(int port)
     {

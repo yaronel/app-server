@@ -15,11 +15,6 @@ public class ChannelConfiguration
   private boolean compress;
   private MetricsCollector metricsCollector;
   
-  public static Builder newBuilder()
-  {
-    return new Builder(new ChannelConfiguration());
-  }
-  
   private ChannelConfiguration() {}
   
   public int maxContentLength()
@@ -55,6 +50,11 @@ public class ChannelConfiguration
   public static class Builder
   {
     private ChannelConfiguration instance;
+    
+    public Builder()
+    {
+      this(new ChannelConfiguration());
+    }
     
     private Builder(ChannelConfiguration instance) {this.instance = instance;}
     
