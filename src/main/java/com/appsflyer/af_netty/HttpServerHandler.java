@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Map;
-import java.util.function.Function;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 
@@ -19,12 +18,12 @@ import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 public class HttpServerHandler extends ChannelInboundHandlerAdapter
 {
   private static final Logger logger = LoggerFactory.getLogger(HttpServerHandler.class);
-  private final Function<HttpRequest, HttpResponse> handlerImpl;
+  private final HttpRequestHandler requestHandler;
   private final MetricsCollector metricsCollector;
   
-  public HttpServerHandler(Function<HttpRequest, HttpResponse> handlerImpl, MetricsCollector metricsCollector)
+  public HttpServerHandler(HttpRequestHandler requestHandler, MetricsCollector metricsCollector)
   {
-    this.handlerImpl = handlerImpl;
+    this.requestHandler = requestHandler;
     this.metricsCollector = metricsCollector;
   }
   
@@ -59,7 +58,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter
   private HttpResponse callHandler(HttpRequest request)
   {
     var startTime = System.nanoTime();
-    HttpResponse response = handlerImpl.apply(request);
+    HttpResponse response = requestHandler.apply(request);
     metricsCollector.recordServiceLatency(Duration.ofNanos(System.nanoTime() - startTime));
     request.recycle();
     return response;

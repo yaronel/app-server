@@ -4,14 +4,13 @@ import com.appsflyer.af_netty.util.MetricsCollector;
 
 import java.time.Duration;
 import java.util.Objects;
-import java.util.function.Function;
 
 public class ServerConfiguration
 {
   private int port;
   private EventLoopConfiguration bossGroupConfig;
   private EventLoopConfiguration childGroupConfig;
-  private Function<HttpRequest, HttpResponse> requestHandler;
+  private HttpRequestHandler requestHandler;
   private MetricsCollector metricsCollector;
   private String host = "localhost";
   private boolean compress = false;
@@ -73,7 +72,7 @@ public class ServerConfiguration
     return metricsCollector;
   }
   
-  public Function<HttpRequest, HttpResponse> requestHandler()
+  public HttpRequestHandler requestHandler()
   {
     return requestHandler;
   }
@@ -139,7 +138,7 @@ public class ServerConfiguration
       return this;
     }
     
-    public Builder setRequestHandler(Function<HttpRequest, HttpResponse> requestHandler)
+    public Builder setRequestHandler(HttpRequestHandler requestHandler)
     {
       Objects.requireNonNull(requestHandler);
       instance.requestHandler = requestHandler;
