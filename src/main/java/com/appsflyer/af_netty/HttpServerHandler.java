@@ -32,20 +32,23 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter
   {
     FullHttpRequest req = (FullHttpRequest) msg;
     HttpResponse inboundResponse = callHandler(HttpRequest.newInstance(req, ctx.channel()));
-    FullHttpResponse outboundResponse =
-        new DefaultFullHttpResponse(
-            req.protocolVersion(),
-            HttpResponseStatus.valueOf(inboundResponse.statusCode()),
-            PooledByteBufAllocator.DEFAULT
-                .directBuffer(inboundResponse.content().length)
-                .writeBytes(inboundResponse.content()),
-            false);
-    
-    setHeaders(inboundResponse, outboundResponse);
+    ctx.write(newFullHttpResponse(inboundResponse), ctx.voidPromise());
     
     inboundResponse.recycle();
     req.release();
-    ctx.write(outboundResponse, ctx.voidPromise());
+  }
+  
+  private FullHttpResponse newFullHttpResponse(HttpResponse response)
+  {
+    var content = response.content();
+    return setHeaders(
+        new DefaultFullHttpResponse(response.protocol(),
+                                    HttpResponseStatus.valueOf(response.statusCode()),
+                                    PooledByteBufAllocator.DEFAULT
+                                        .directBuffer(content.length)
+                                        .writeBytes(content),
+                                    false),
+        response.headers());
   }
   
   @Override
@@ -65,18 +68,19 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter
   }
   
   /**
-   * Sets {@code inboundResponse}'s headers on {@code outboundResponse}.
+   * Sets headers of the {@code response}.
    *
-   * @param inboundResponse  The response created by the user
-   * @param outboundResponse The response that will be written back to the client
+   * @param response The response that will be written back to the client
+   * @param headers  The response created by the user
    */
-  private void setHeaders(HttpResponse inboundResponse, FullHttpResponse outboundResponse)
+  private FullHttpResponse setHeaders(FullHttpResponse response, Map<String, String> headers)
   {
-    HttpHeaders outHeaders = outboundResponse.headers();
-    for (Map.Entry<String, String> entry : inboundResponse.headers().entrySet()) {
+    HttpHeaders outHeaders = response.headers();
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
       outHeaders.set(entry.getKey(), entry.getValue());
     }
-    outHeaders.set(CONTENT_LENGTH, outboundResponse.content().readableBytes());
+    outHeaders.set(CONTENT_LENGTH, response.content().readableBytes());
+    return response;
   }
   
   @Override

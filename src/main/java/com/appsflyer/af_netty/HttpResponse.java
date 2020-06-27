@@ -1,10 +1,13 @@
 package com.appsflyer.af_netty;
 
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.Recycler;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class HttpResponse implements Recyclable
 {
@@ -15,6 +18,7 @@ public class HttpResponse implements Recyclable
   private int statusCode;
   private byte[] content;
   private Map<String, String> headers;
+  private HttpVersion protocol;
   
   private static final Recycler<HttpResponse> RECYCLER = new Recycler<>()
   {
@@ -29,17 +33,35 @@ public class HttpResponse implements Recyclable
     this.handle = handle;
   }
   
-  public static HttpResponse newInstance(int statusCode, byte[] content, Map<String, String> headers)
+  public static HttpResponse newInstance(int statusCode,
+                                         byte[] content,
+                                         Map<String, String> headers,
+                                         HttpVersion protocol)
   {
     if (statusCode < 100 || statusCode > 599) {
       throw new IllegalStateException(
           String.format("Invalid status code: %d", statusCode));
     }
+    
     HttpResponse instance = RECYCLER.get();
     instance.statusCode = statusCode;
     instance.content = Objects.requireNonNullElse(content, EMPTY_BYTE_ARRAY);
     instance.headers = Objects.requireNonNullElse(headers, EMPTY_MAP);
+    instance.protocol = Objects.requireNonNullElse(protocol, HTTP_1_1);
     return instance;
+  }
+  
+  public static HttpResponse newInstance(int statusCode,
+                                         byte[] content,
+                                         Map<String, String> headers,
+                                         String protocol)
+  {
+    return newInstance(statusCode, content, headers, HttpVersion.valueOf(protocol));
+  }
+  
+  public static HttpResponse newInstance(int statusCode, byte[] content, Map<String, String> headers)
+  {
+    return newInstance(statusCode, content, headers, HTTP_1_1);
   }
   
   public static HttpResponse newInstance(int statusCode, byte[] content)
@@ -80,12 +102,18 @@ public class HttpResponse implements Recyclable
     return headers;
   }
   
+  public HttpVersion protocol()
+  {
+    return protocol;
+  }
+  
   @Override
   public boolean recycle()
   {
     statusCode = 0;
     content = null;
     headers = null;
+    protocol = null;
     handle.recycle(this);
     return true;
   }
