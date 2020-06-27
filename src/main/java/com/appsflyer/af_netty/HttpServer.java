@@ -2,6 +2,8 @@ package com.appsflyer.af_netty;
 
 import com.appsflyer.af_netty.channel.ChannelConfiguration;
 import com.appsflyer.af_netty.channel.HttpChannelInitializer;
+import com.appsflyer.af_netty.handler.SyncHttpRequestHandler;
+import com.appsflyer.af_netty.handler.SyncRequestHandler;
 import com.appsflyer.af_netty.util.EventLoopFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -56,7 +58,10 @@ public class HttpServer
   {
     return new HttpChannelInitializer(
         new ChannelConfiguration.Builder()
-            .setInboundHandler(new HttpServerHandler(config.requestHandler(), config.metricsCollector()))
+            .setInboundHandler(
+                new SyncHttpRequestHandler(
+                    (SyncRequestHandler) config.requestHandler(),
+                    config.metricsCollector()))
             .compress(config.isCompress())
             .setReadTimeout(config.readTimeout())
             .setWriteTimeout(config.writeTimeout())

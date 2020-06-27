@@ -111,6 +111,7 @@ public class HttpRequest implements Recyclable
   public boolean recycle()
   {
     headers.recycle();
+    impl.release();
     impl = null;
     channel = null;
     queryDecoder = null;

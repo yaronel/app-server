@@ -1,4 +1,4 @@
-package com.appsflyer.af_netty.channel;
+package com.appsflyer.af_netty.handler;
 
 import com.appsflyer.af_netty.metrics.MetricsCollector;
 import io.netty.buffer.ByteBuf;
@@ -22,7 +22,7 @@ public class HttpServerMetricsHandler extends ChannelDuplexHandler
   private long sendLatency;
   private final MetricsCollector metricsCollector;
   
-  HttpServerMetricsHandler(MetricsCollector metricsCollector)
+  public HttpServerMetricsHandler(MetricsCollector metricsCollector)
   {
     this.metricsCollector = metricsCollector;
   }

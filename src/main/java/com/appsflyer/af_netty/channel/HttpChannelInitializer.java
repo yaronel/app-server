@@ -1,5 +1,8 @@
 package com.appsflyer.af_netty.channel;
 
+import com.appsflyer.af_netty.handler.FullHtmlRequestDecoder;
+import com.appsflyer.af_netty.handler.FullHtmlResponseEncoder;
+import com.appsflyer.af_netty.handler.HttpServerMetricsHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -31,6 +34,8 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
             .addLast("aggregator", new HttpObjectAggregator(config.maxContentLength()))
             .addLast("write-timeout", new WriteTimeoutHandler(
                 (int) config.writeTimeout().getSeconds()))
+            .addLast("full-html-request-decoder", FullHtmlRequestDecoder.INSTANCE)
+            .addLast("full-html-response-encoder", FullHtmlResponseEncoder.INSTANCE)
             .addLast("handler", config.inboundHandler());
   }
 }
