@@ -1,4 +1,4 @@
-package com.appsflyer.af_netty.util;
+package com.appsflyer.af_netty.metrics;
 
 import java.time.Duration;
 

@@ -1,7 +1,6 @@
 package com.appsflyer.af_netty.channel;
 
-import com.appsflyer.af_netty.util.NoopMetricsCollector;
-import com.appsflyer.af_netty.util.MetricsCollector;
+import com.appsflyer.af_netty.metrics.MetricsCollector;
 import io.netty.channel.ChannelInboundHandler;
 
 import java.time.Duration;
@@ -112,7 +111,7 @@ public class ChannelConfiguration
         instance.maxContentLength = 1048576;
       }
       if (instance.metricsCollector == null) {
-        instance.metricsCollector = new NoopMetricsCollector();
+        throw new IllegalStateException("Missing metrics collector");
       }
       if (instance.inboundHandler == null) {
         throw new IllegalStateException("Missing inbound handler");

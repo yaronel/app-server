@@ -1,6 +1,6 @@
 package com.appsflyer.af_netty.channel;
 
-import com.appsflyer.af_netty.util.MetricsCollector;
+import com.appsflyer.af_netty.metrics.MetricsCollector;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufHolder;
 import io.netty.channel.ChannelDuplexHandler;

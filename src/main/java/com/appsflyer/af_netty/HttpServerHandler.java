@@ -1,6 +1,8 @@
 package com.appsflyer.af_netty;
 
-import com.appsflyer.af_netty.util.MetricsCollector;
+import com.appsflyer.af_netty.metrics.MetricsCollector;
+import com.appsflyer.af_netty.request.HttpRequest;
+import com.appsflyer.af_netty.request.HttpRequestHandler;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;

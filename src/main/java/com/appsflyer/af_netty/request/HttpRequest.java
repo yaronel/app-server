@@ -1,5 +1,6 @@
-package com.appsflyer.af_netty;
+package com.appsflyer.af_netty.request;
 
+import com.appsflyer.af_netty.Recyclable;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;

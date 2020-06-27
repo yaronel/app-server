@@ -1,4 +1,6 @@
-package com.appsflyer.af_netty;
+package com.appsflyer.af_netty.request;
+
+import com.appsflyer.af_netty.HttpResponse;
 
 import java.util.function.Function;
 

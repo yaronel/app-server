@@ -1,8 +1,8 @@
-package com.appsflyer.af_netty.util;
+package com.appsflyer.af_netty.metrics;
 
 import java.time.Duration;
 
-public class NoopMetricsCollector implements MetricsCollector
+class NoopMetricsCollector implements MetricsCollector
 {
   @Override
   public void markHit()

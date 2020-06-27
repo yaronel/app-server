@@ -1,4 +1,4 @@
-package com.appsflyer.af_netty.util;
+package com.appsflyer.af_netty.metrics;
 
 import com.af.metricsng.Metrics;
 import com.codahale.metrics.Meter;
@@ -21,12 +21,12 @@ public class MetricsCollectorImpl implements MetricsCollector
   private final Timer sendLatency;
   private final Timer receiveLatency;
   
-  public MetricsCollectorImpl(String metricPrefix)
+  MetricsCollectorImpl(String metricPrefix)
   {
     this(metricPrefix, Metrics.getDefaultMetricRegistry());
   }
   
-  public MetricsCollectorImpl(String metricPrefix, MetricRegistry registry)
+  MetricsCollectorImpl(String metricPrefix, MetricRegistry registry)
   {
     hits = registry.meter(MetricRegistry.name(metricPrefix, "hits", "all"));
     successHits = registry.meter(MetricRegistry.name(metricPrefix, "hits", "success"));

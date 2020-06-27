@@ -1,5 +1,6 @@
-package com.appsflyer.af_netty;
+package com.appsflyer.af_netty.request;
 
+import com.appsflyer.af_netty.Recyclable;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.util.Recycler;
 

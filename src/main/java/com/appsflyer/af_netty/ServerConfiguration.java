@@ -1,6 +1,8 @@
 package com.appsflyer.af_netty;
 
-import com.appsflyer.af_netty.util.MetricsCollector;
+import com.appsflyer.af_netty.metrics.MetricsCollector;
+import com.appsflyer.af_netty.metrics.MetricsCollectorFactory;
+import com.appsflyer.af_netty.request.HttpRequestHandler;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -147,7 +149,6 @@ public class ServerConfiguration
     
     public Builder setMetricsCollector(MetricsCollector metricsCollector)
     {
-      Objects.requireNonNull(metricsCollector);
       instance.metricsCollector = metricsCollector;
       return this;
     }
@@ -162,9 +163,6 @@ public class ServerConfiguration
     
     private void assertValidState()
     {
-      if (instance.metricsCollector == null) {
-        throw new IllegalStateException("Missing MetricsCollector");
-      }
       if (instance.bossGroupConfig == null) {
         throw new IllegalStateException("Missing boss event loop group configuration");
       }
@@ -176,6 +174,9 @@ public class ServerConfiguration
       }
       if (instance.port <= 0 || instance.port > 65535) {
         throw new IllegalStateException("Invalid HTTP port ");
+      }
+      if (instance.metricsCollector == null) {
+        instance.metricsCollector = MetricsCollectorFactory.NOOP;
       }
     }
   }
