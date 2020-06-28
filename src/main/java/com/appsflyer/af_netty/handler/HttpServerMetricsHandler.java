@@ -86,11 +86,11 @@ public class HttpServerMetricsHandler extends ChannelDuplexHandler
   private void sumMetrics(Future<? super Void> future)
   {
     metricsCollector.recordSendLatency(Duration.ofNanos(System.nanoTime() - sendLatency));
-    if (receiveLatency != 0) {
-      metricsCollector.recordResponseLatency(Duration.ofNanos(System.nanoTime() - receiveLatency));
+    if (receiveLatency == 0) {
+      metricsCollector.recordResponseLatency(Duration.ofNanos(System.nanoTime() - sendLatency));
     }
     else {
-      metricsCollector.recordResponseLatency(Duration.ofNanos(System.nanoTime() - sendLatency));
+      metricsCollector.recordResponseLatency(Duration.ofNanos(System.nanoTime() - receiveLatency));
     }
     metricsCollector.markSentBytes(bytesSent);
     metricsCollector.markSuccessHit();

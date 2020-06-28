@@ -8,6 +8,7 @@ import com.appsflyer.af_netty.request.HttpRequest;
  * The handler will be called with a single {@link HttpRequest} argument
  * and should return an {@link HttpResponse}
  */
+@FunctionalInterface
 public interface SyncRequestHandler extends RequestHandler
 {
 }

@@ -16,10 +16,29 @@ import java.util.Map;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 
 @ChannelHandler.Sharable
-public class FullHtmlResponseEncoder extends MessageToMessageEncoder<HttpResponse>
+public final class FullHtmlResponseEncoder extends MessageToMessageEncoder<HttpResponse>
 {
-  public static final FullHtmlResponseEncoder INSTANCE = new FullHtmlResponseEncoder();
+  public static final MessageToMessageEncoder<HttpResponse> INSTANCE = new FullHtmlResponseEncoder();
   
+  /**
+   * Sets headers of the {@code response}.
+   *
+   * @param response The response that will be written back to the client
+   * @param headers  Map of name value pairs
+   */
+  private static FullHttpResponse setHeaders(FullHttpResponse response, Map<String, String> headers)
+  {
+    HttpHeaders outHeaders = response.headers();
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      outHeaders.set(entry.getKey(), entry.getValue());
+    }
+    outHeaders.set(CONTENT_LENGTH, response.content().readableBytes());
+    return response;
+  }
+  
+  private FullHtmlResponseEncoder() {}
+  
+  @SuppressWarnings("FeatureEnvy")
   @Override
   protected void encode(ChannelHandlerContext ctx, HttpResponse msg, List<Object> out)
   {
@@ -35,19 +54,4 @@ public class FullHtmlResponseEncoder extends MessageToMessageEncoder<HttpRespons
     msg.recycle();
   }
   
-  /**
-   * Sets headers of the {@code response}.
-   *
-   * @param response The response that will be written back to the client
-   * @param headers  Map of name value pairs
-   */
-  private FullHttpResponse setHeaders(FullHttpResponse response, Map<String, String> headers)
-  {
-    HttpHeaders outHeaders = response.headers();
-    for (Map.Entry<String, String> entry : headers.entrySet()) {
-      outHeaders.set(entry.getKey(), entry.getValue());
-    }
-    outHeaders.set(CONTENT_LENGTH, response.content().readableBytes());
-    return response;
-  }
 }

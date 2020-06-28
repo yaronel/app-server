@@ -7,7 +7,8 @@ import com.appsflyer.af_netty.metrics.MetricsCollectorFactory;
 import java.time.Duration;
 import java.util.Objects;
 
-public class ServerConfiguration
+@SuppressWarnings("WeakerAccess")
+public final class ServerConfiguration
 {
   private int port;
   private EventLoopConfiguration bossGroupConfig;
@@ -15,10 +16,10 @@ public class ServerConfiguration
   private RequestHandler requestHandler;
   private MetricsCollector metricsCollector;
   private String host = "localhost";
-  private boolean compress = false;
-  private Duration connectTimeout = Duration.ofSeconds(30);
-  private Duration readTimeout = Duration.ofSeconds(10);
-  private Duration writeTimeout = Duration.ofSeconds(10);
+  private boolean compress;
+  private Duration connectTimeout = Duration.ofSeconds(30L);
+  private Duration readTimeout = Duration.ofSeconds(10L);
+  private Duration writeTimeout = Duration.ofSeconds(10L);
   
   private ServerConfiguration()
   {
@@ -75,7 +76,7 @@ public class ServerConfiguration
   }
   
   
-  public static class Builder
+  public static final class Builder
   {
     private ServerConfiguration instance;
     

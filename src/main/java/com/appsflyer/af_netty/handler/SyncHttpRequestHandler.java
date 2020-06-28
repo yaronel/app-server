@@ -55,6 +55,7 @@ public class SyncHttpRequestHandler extends ChannelInboundHandlerAdapter
     if (suppressed.length > 0) {
       logger.error("Printing suppressed exceptions:");
       for (int i = 0; i < suppressed.length; i++) {
+        //noinspection HardcodedFileSeparator
         logger.error("Suppressed {}/{}: {}", i + 1, suppressed.length, suppressed[i].getMessage());
       }
     }

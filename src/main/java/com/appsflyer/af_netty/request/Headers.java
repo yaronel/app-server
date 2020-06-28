@@ -4,13 +4,15 @@ import com.appsflyer.af_netty.Recyclable;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.util.Recycler;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Headers implements Recyclable
+public final class Headers implements Recyclable
 {
   private final Recycler.Handle<Headers> handle;
   private final Object mutex = new Object();
+  @SuppressWarnings("FieldAccessedSynchronizedAndUnsynchronized")
   private HttpHeaders impl;
   private volatile Map<String, String> rawHeaders;
   
@@ -22,7 +24,7 @@ public class Headers implements Recyclable
     }
   };
   
-  public static Headers newInstance(HttpHeaders impl)
+  static Headers newInstance(HttpHeaders impl)
   {
     Headers headers = RECYCLER.get();
     headers.impl = impl;
@@ -39,7 +41,7 @@ public class Headers implements Recyclable
     if (rawHeaders == null) {
       synchronized (mutex) {
         if (rawHeaders == null) {
-          var res = new HashMap<String, String>(impl.size());
+          Map<String, String> res = new HashMap<>(impl.size());
           var iter = impl.iteratorAsString();
           while (iter.hasNext()) {
             var entry = iter.next();
@@ -49,7 +51,7 @@ public class Headers implements Recyclable
         }
       }
     }
-    return rawHeaders;
+    return Collections.unmodifiableMap(rawHeaders);
   }
   
   @Override

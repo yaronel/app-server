@@ -6,7 +6,7 @@ import io.netty.channel.ChannelInboundHandler;
 import java.time.Duration;
 import java.util.Objects;
 
-public class ChannelConfiguration
+public final class ChannelConfiguration
 {
   private int maxContentLength;
   private Duration readTimeout;
@@ -17,37 +17,37 @@ public class ChannelConfiguration
   
   private ChannelConfiguration() {}
   
-  public int maxContentLength()
+  int maxContentLength()
   {
     return maxContentLength;
   }
   
-  public Duration readTimeout()
+  Duration readTimeout()
   {
     return readTimeout;
   }
   
-  public Duration writeTimeout()
+  Duration writeTimeout()
   {
     return writeTimeout;
   }
   
-  public ChannelInboundHandler inboundHandler()
+  ChannelInboundHandler inboundHandler()
   {
     return inboundHandler;
   }
   
-  public boolean isCompress()
+  boolean isCompress()
   {
     return compress;
   }
   
-  public MetricsCollector metricsCollector()
+  MetricsCollector metricsCollector()
   {
     return metricsCollector;
   }
   
-  public static class Builder
+  public static final class Builder
   {
     private ChannelConfiguration instance;
     

@@ -6,16 +6,18 @@ import io.netty.channel.ServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
-public class NioFactory extends EventLoopFactory
+public class NioFactory implements NativeEventLoop
 {
+  NioFactory() {}
+  
   @Override
-  public EventLoopGroup newEventLoopGroup(EventLoopConfiguration config)
+  public final EventLoopGroup newEventLoopGroup(EventLoopConfiguration config)
   {
     return new NioEventLoopGroup(config.threadCount(), newThreadFactory(config));
   }
   
   @Override
-  public Class<? extends ServerChannel> channelClass()
+  public final Class<? extends ServerChannel> channelClass()
   {
     return NioServerSocketChannel.class;
   }

@@ -6,16 +6,18 @@ import io.netty.channel.ServerChannel;
 import io.netty.channel.kqueue.KQueueEventLoopGroup;
 import io.netty.channel.kqueue.KQueueServerSocketChannel;
 
-public class KQueueFactory extends EventLoopFactory
+public class KQueueFactory implements NativeEventLoop
 {
+  KQueueFactory() {}
+  
   @Override
-  public EventLoopGroup newEventLoopGroup(EventLoopConfiguration config)
+  public final EventLoopGroup newEventLoopGroup(EventLoopConfiguration config)
   {
     return new KQueueEventLoopGroup(config.threadCount(), newThreadFactory(config));
   }
   
   @Override
-  public Class<? extends ServerChannel> channelClass()
+  public final Class<? extends ServerChannel> channelClass()
   {
     return KQueueServerSocketChannel.class;
   }

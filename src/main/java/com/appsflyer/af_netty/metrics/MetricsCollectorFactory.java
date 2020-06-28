@@ -2,9 +2,11 @@ package com.appsflyer.af_netty.metrics;
 
 import com.codahale.metrics.MetricRegistry;
 
-public abstract class MetricsCollectorFactory
+public final class MetricsCollectorFactory
 {
   public static final MetricsCollector NOOP = new NoopMetricsCollector();
+  
+  private MetricsCollectorFactory() {}
   
   public static MetricsCollector newInstance(String metricPrefix)
   {

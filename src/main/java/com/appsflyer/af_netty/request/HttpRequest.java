@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-public class HttpRequest implements Recyclable
+public final class HttpRequest implements Recyclable
 {
   private static final Recycler<HttpRequest> RECYCLER = new Recycler<>()
   {

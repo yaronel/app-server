@@ -12,6 +12,7 @@ package com.appsflyer.af_netty;
  * see {@link io.netty.util.Recycler} and
  * <a href="https://github.com/netty/netty/wiki/Using-as-a-generic-library#thread-local-object-pool">this wiki</a>
  */
+@FunctionalInterface
 public interface Recyclable
 {
   boolean recycle();

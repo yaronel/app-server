@@ -16,12 +16,12 @@ public class EventLoopConfiguration
     this.threadCount = threadCount;
   }
   
-  public String name()
+  public final String name()
   {
     return name;
   }
   
-  public int threadCount()
+  public final int threadCount()
   {
     return threadCount;
   }

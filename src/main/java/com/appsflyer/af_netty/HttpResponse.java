@@ -9,7 +9,8 @@ import java.util.Objects;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-public class HttpResponse implements Recyclable
+@SuppressWarnings("InstanceVariableMayNotBeInitialized")
+public final class HttpResponse implements Recyclable
 {
   private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
   private static final Map<String, String> EMPTY_MAP = Collections.emptyMap();
@@ -88,6 +89,7 @@ public class HttpResponse implements Recyclable
    * @return The body of the response as a byte array. Returns the underlining
    * array and therefor any changes will mutate the response.
    */
+  @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
   public byte[] content()
   {
     return content;
@@ -97,6 +99,7 @@ public class HttpResponse implements Recyclable
    * @return The response headers as a String -> String map Returns the underlining
    * Map instance and therefor any changes will mutate the response.
    */
+  @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
   public Map<String, String> headers()
   {
     return headers;

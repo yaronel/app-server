@@ -11,7 +11,7 @@ import java.util.List;
 @ChannelHandler.Sharable
 public class FullHtmlRequestDecoder extends MessageToMessageDecoder<FullHttpRequest>
 {
-  public static final FullHtmlRequestDecoder INSTANCE = new FullHtmlRequestDecoder();
+  public static final MessageToMessageDecoder<FullHttpRequest> INSTANCE = new FullHtmlRequestDecoder();
   
   @Override
   protected void decode(ChannelHandlerContext ctx, FullHttpRequest msg, List<Object> out)

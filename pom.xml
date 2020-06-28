@@ -4,16 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.appsflyer</groupId>
-    <artifactId>af-netty</artifactId>
+    <groupId>com.appsflyer.rta</groupId>
+    <artifactId>http-server</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>AppsFlyer Netty</name>
+    <name>RTA Http Server</name>
     <packaging>jar</packaging>
 
     <properties>
         <maven.compiler.release>11</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <netty.version>4.1.50.FINAL</netty.version>
+        <netty.version>4.1.50.Final</netty.version>
         <junit.jupiter.version>5.6.2</junit.jupiter.version>
     </properties>
 
