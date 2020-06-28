@@ -26,7 +26,7 @@ public final class DefaultHttpServer implements HttpServer
   private final ServerBootstrap bootstrap;
   private Channel serverChannel;
   
-  static HttpServer createHttpServer(ServerConfiguration config)
+  public static HttpServer createHttpServer(ServerConfiguration config)
   {
     return new DefaultHttpServer(config);
   }
