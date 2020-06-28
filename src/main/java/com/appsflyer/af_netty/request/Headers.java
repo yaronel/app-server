@@ -12,7 +12,7 @@ public class Headers implements Recyclable
   private final Recycler.Handle<Headers> handle;
   private final Object mutex = new Object();
   private HttpHeaders impl;
-  private volatile Map<CharSequence, CharSequence> rawHeaders;
+  private volatile Map<String, String> rawHeaders;
   
   private static final Recycler<Headers> RECYCLER = new Recycler<>()
   {
@@ -34,13 +34,13 @@ public class Headers implements Recyclable
     this.handle = handle;
   }
   
-  public Map<CharSequence, CharSequence> getAll()
+  public Map<String, String> getAll()
   {
     if (rawHeaders == null) {
       synchronized (mutex) {
         if (rawHeaders == null) {
-          var res = new HashMap<CharSequence, CharSequence>(impl.size());
-          var iter = impl.iteratorCharSequence();
+          var res = new HashMap<String, String>(impl.size());
+          var iter = impl.iteratorAsString();
           while (iter.hasNext()) {
             var entry = iter.next();
             res.put(entry.getKey(), entry.getValue());
@@ -56,6 +56,7 @@ public class Headers implements Recyclable
   public boolean recycle()
   {
     impl = null;
+    rawHeaders = null;
     handle.recycle(this);
     return true;
   }
