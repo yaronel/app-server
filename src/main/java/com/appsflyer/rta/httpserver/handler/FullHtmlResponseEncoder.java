@@ -13,7 +13,9 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import java.util.List;
 import java.util.Map;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderValues.*;
 
 @ChannelHandler.Sharable
 public final class FullHtmlResponseEncoder extends MessageToMessageEncoder<HttpResponse>
@@ -29,20 +31,22 @@ public final class FullHtmlResponseEncoder extends MessageToMessageEncoder<HttpR
   private static FullHttpResponse setHeaders(FullHttpResponse response, Map<String, String> headers)
   {
     HttpHeaders outHeaders = response.headers();
+    outHeaders.set(CACHE_CONTROL, String.join(", ", NO_CACHE, NO_STORE, MUST_REVALIDATE))
+              .set(CONTENT_LENGTH, response.content().readableBytes());
+  
     for (Map.Entry<String, String> entry : headers.entrySet()) {
       outHeaders.set(entry.getKey(), entry.getValue());
     }
-    outHeaders.set(CONTENT_LENGTH, response.content().readableBytes());
+  
     return response;
   }
   
   private FullHtmlResponseEncoder() {}
   
-  @SuppressWarnings("FeatureEnvy")
   @Override
   protected void encode(ChannelHandlerContext ctx, HttpResponse msg, List<Object> out)
   {
-    var content = msg.content();
+    byte[] content = msg.content();
     FullHttpResponse response =
         new DefaultFullHttpResponse(
             msg.protocol(),

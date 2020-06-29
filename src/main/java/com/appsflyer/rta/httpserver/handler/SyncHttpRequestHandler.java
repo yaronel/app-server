@@ -51,7 +51,7 @@ public class SyncHttpRequestHandler extends ChannelInboundHandlerAdapter
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
   {
     logger.error(cause.getMessage());
-    var suppressed = cause.getSuppressed();
+    Throwable[] suppressed = cause.getSuppressed();
     if (suppressed.length > 0) {
       logger.error("Printing suppressed exceptions:");
       for (int i = 0; i < suppressed.length; i++) {

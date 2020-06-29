@@ -6,12 +6,13 @@ import io.netty.channel.ServerChannel;
 import io.netty.channel.kqueue.KQueueEventLoopGroup;
 import io.netty.channel.kqueue.KQueueServerSocketChannel;
 
+@SuppressWarnings("MethodReturnAlwaysConstant")
 public class KQueueFactory implements NativeEventLoop
 {
   KQueueFactory() {}
   
   @Override
-  public final EventLoopGroup newEventLoopGroup(EventLoopConfiguration config)
+  public final EventLoopGroup newGroup(EventLoopConfiguration config)
   {
     return new KQueueEventLoopGroup(config.threadCount(), newThreadFactory(config));
   }

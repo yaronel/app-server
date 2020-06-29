@@ -50,8 +50,8 @@ public final class DefaultHttpServer implements HttpServer
              */
             .option(ChannelOption.SO_REUSEADDR, true)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) config.connectTimeout().toMillis())
-            .group(eventLoopCreator.newEventLoopGroup(config.bossGroupConfig()),
-                   eventLoopCreator.newEventLoopGroup(config.childGroupConfig()))
+            .group(eventLoopCreator.newGroup(config.bossGroupConfig()),
+                   eventLoopCreator.newGroup(config.childGroupConfig()))
             .channel(eventLoopCreator.channelClass())
             .childHandler(getChannelInitializer())
             .bind(host, config.port())
@@ -90,11 +90,7 @@ public final class DefaultHttpServer implements HttpServer
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
       } finally {
-        EventLoopGroup group = bootstrap.config().group();
-        if (!group.isShuttingDown() && !group.isShutdown()) {
-          group.shutdownGracefully();
-          logger.info("Server is down");
-        }
+        shutdownEventLoopGroup();
       }
     }
   }
@@ -112,7 +108,16 @@ public final class DefaultHttpServer implements HttpServer
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
       } finally {
-        bootstrap.config().group().shutdownGracefully();
+        shutdownEventLoopGroup();
+      }
+    }
+  }
+  
+  private void shutdownEventLoopGroup()
+  {
+    EventLoopGroup group = bootstrap.config().group();
+    if (!group.isShuttingDown() && !group.isShutdown()) {
+      if (group.shutdownGracefully().awaitUninterruptibly(5L, TimeUnit.SECONDS)) {
         logger.info("Server is down");
       }
     }

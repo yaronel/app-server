@@ -10,6 +10,7 @@ public class EventLoopConfiguration
     this(threadCount, "NioEventLoop");
   }
   
+  @SuppressWarnings("WeakerAccess")
   public EventLoopConfiguration(int threadCount, String name)
   {
     this.name = name;

@@ -6,12 +6,13 @@ import io.netty.channel.ServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
+@SuppressWarnings("MethodReturnAlwaysConstant")
 public class NioFactory implements NativeEventLoop
 {
   NioFactory() {}
   
   @Override
-  public final EventLoopGroup newEventLoopGroup(EventLoopConfiguration config)
+  public final EventLoopGroup newGroup(EventLoopConfiguration config)
   {
     return new NioEventLoopGroup(config.threadCount(), newThreadFactory(config));
   }

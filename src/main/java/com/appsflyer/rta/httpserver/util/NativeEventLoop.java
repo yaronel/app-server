@@ -7,9 +7,10 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.concurrent.ThreadFactory;
 
+@SuppressWarnings("MethodReturnAlwaysConstant")
 public interface NativeEventLoop
 {
-  EventLoopGroup newEventLoopGroup(EventLoopConfiguration config);
+  EventLoopGroup newGroup(EventLoopConfiguration config);
   
   Class<? extends ServerChannel> channelClass();
   

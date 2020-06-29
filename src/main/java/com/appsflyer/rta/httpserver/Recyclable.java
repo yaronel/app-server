@@ -12,6 +12,7 @@ package com.appsflyer.rta.httpserver;
  * see {@link io.netty.util.Recycler} and
  * <a href="https://github.com/netty/netty/wiki/Using-as-a-generic-library#thread-local-object-pool">this wiki</a>
  */
+@SuppressWarnings("SameReturnValue")
 @FunctionalInterface
 public interface Recyclable
 {
