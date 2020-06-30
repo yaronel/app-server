@@ -5,16 +5,12 @@ import com.appsflyer.rta.httpserver.metrics.MetricsCollector;
 import com.appsflyer.rta.httpserver.request.HttpRequest;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 
 @ChannelHandler.Sharable
-public class SyncHttpRequestHandler extends ChannelInboundHandlerAdapter
+public final class SyncHttpRequestHandler extends HttpRequestHandler
 {
-  private static final Logger logger = LoggerFactory.getLogger(SyncHttpRequestHandler.class);
   private final SyncRequestHandler requestHandler;
   private final MetricsCollector metricsCollector;
   
@@ -28,8 +24,17 @@ public class SyncHttpRequestHandler extends ChannelInboundHandlerAdapter
   public void channelRead(ChannelHandlerContext ctx, Object msg)
   {
     HttpRequest request = (HttpRequest) msg;
-    ctx.write(callHandler(request), ctx.voidPromise());
-    request.recycle();
+    var startTime = System.nanoTime();
+    try {
+      HttpResponse response = requestHandler.apply(request);
+      metricsCollector.recordServiceLatency(Duration.ofNanos(System.nanoTime() - startTime));
+      ctx.write(response, ctx.voidPromise());
+    } catch (RuntimeException ex) {
+      metricsCollector.recordServiceLatency(Duration.ofNanos(System.nanoTime() - startTime));
+      exceptionCaught(ctx, ex);
+    } finally {
+      request.recycle();
+    }
   }
   
   @Override
@@ -37,28 +42,5 @@ public class SyncHttpRequestHandler extends ChannelInboundHandlerAdapter
   {
     ctx.flush();
     ctx.fireChannelReadComplete();
-  }
-  
-  private HttpResponse callHandler(HttpRequest request)
-  {
-    var startTime = System.nanoTime();
-    HttpResponse response = requestHandler.apply(request);
-    metricsCollector.recordServiceLatency(Duration.ofNanos(System.nanoTime() - startTime));
-    return response;
-  }
-  
-  @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-  {
-    logger.error(cause.getMessage());
-    Throwable[] suppressed = cause.getSuppressed();
-    if (suppressed.length > 0) {
-      logger.error("Printing suppressed exceptions:");
-      for (int i = 0; i < suppressed.length; i++) {
-        //noinspection HardcodedFileSeparator
-        logger.error("Suppressed {}/{}: {}", i + 1, suppressed.length, suppressed[i].getMessage());
-      }
-    }
-    ctx.close();
   }
 }

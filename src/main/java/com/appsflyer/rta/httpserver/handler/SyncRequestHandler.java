@@ -9,6 +9,6 @@ import com.appsflyer.rta.httpserver.request.HttpRequest;
  * and should return an {@link HttpResponse}
  */
 @FunctionalInterface
-public interface SyncRequestHandler extends RequestHandler
+public interface SyncRequestHandler extends RequestHandler<HttpResponse>
 {
 }

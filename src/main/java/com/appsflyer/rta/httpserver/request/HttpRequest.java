@@ -8,6 +8,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.Recycler;
+import io.netty.util.ReferenceCountUtil;
 
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -111,7 +112,7 @@ public final class HttpRequest implements Recyclable
   public boolean recycle()
   {
     headers.recycle();
-    impl.release();
+    ReferenceCountUtil.release(impl);
     impl = null;
     channel = null;
     queryDecoder = null;

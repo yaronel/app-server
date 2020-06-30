@@ -2,6 +2,7 @@ package com.appsflyer.rta.httpserver.channel;
 
 import com.appsflyer.rta.httpserver.metrics.MetricsCollector;
 import io.netty.channel.ChannelInboundHandler;
+import io.netty.util.concurrent.EventExecutorGroup;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -14,6 +15,7 @@ public final class ChannelConfiguration
   private ChannelInboundHandler inboundHandler;
   private boolean compress;
   private MetricsCollector metricsCollector;
+  private EventExecutorGroup eventExecutors;
   
   private ChannelConfiguration() {}
   
@@ -45,6 +47,15 @@ public final class ChannelConfiguration
   MetricsCollector metricsCollector()
   {
     return metricsCollector;
+  }
+  
+  EventExecutorGroup eventExecutors()
+  {
+    return eventExecutors;
+  }
+  boolean hasEventExecutors()
+  {
+    return eventExecutors != null;
   }
   
   public static final class Builder
@@ -94,6 +105,12 @@ public final class ChannelConfiguration
     public Builder setMetricsCollector(MetricsCollector recorder)
     {
       instance.metricsCollector = recorder;
+      return this;
+    }
+    @SuppressWarnings("UnusedReturnValue")
+    public Builder setEventExecutors(EventExecutorGroup eventExecutors)
+    {
+      instance.eventExecutors = eventExecutors;
       return this;
     }
     

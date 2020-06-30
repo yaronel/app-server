@@ -11,12 +11,13 @@ import java.util.Objects;
 public final class ServerConfiguration
 {
   private int port;
-  private EventLoopConfiguration bossGroupConfig;
-  private EventLoopConfiguration childGroupConfig;
-  private RequestHandler requestHandler;
+  private EventExecutorsConfig blockingExecutorsConfig;
+  private EventExecutorsConfig childGroupConfig;
+  private RequestHandler<?> requestHandler;
   private MetricsCollector metricsCollector;
-  private String host = "localhost";
   private boolean compress;
+  private String host = "localhost";
+  private IoMode mode = IoMode.BLOCKING;
   private Duration connectTimeout = Duration.ofSeconds(30L);
   private Duration readTimeout = Duration.ofSeconds(10L);
   private Duration writeTimeout = Duration.ofSeconds(10L);
@@ -40,12 +41,12 @@ public final class ServerConfiguration
     return compress;
   }
   
-  public EventLoopConfiguration bossGroupConfig()
+  public EventExecutorsConfig blockingExecutorsConfig()
   {
-    return bossGroupConfig;
+    return blockingExecutorsConfig;
   }
   
-  public EventLoopConfiguration childGroupConfig()
+  public EventExecutorsConfig childGroupConfig()
   {
     return childGroupConfig;
   }
@@ -70,9 +71,19 @@ public final class ServerConfiguration
     return metricsCollector;
   }
   
-  public RequestHandler requestHandler()
+  public IoMode mode()
+  {
+    return mode;
+  }
+  
+  public RequestHandler<?> requestHandler()
   {
     return requestHandler;
+  }
+  
+  public boolean isBlockingIo()
+  {
+    return mode.equals(IoMode.BLOCKING);
   }
   
   
@@ -106,17 +117,17 @@ public final class ServerConfiguration
       return this;
     }
     
-    public Builder setBossGroupConfig(EventLoopConfiguration bossGroupConfig)
+    public Builder setBlockingExecutorsConfig(EventExecutorsConfig executorsConfig)
     {
-      Objects.requireNonNull(bossGroupConfig);
-      instance.bossGroupConfig = bossGroupConfig;
+      Objects.requireNonNull(executorsConfig);
+      instance.blockingExecutorsConfig = executorsConfig;
       return this;
     }
     
-    public Builder setChildGroupConfig(EventLoopConfiguration childGroupConfig)
+    public Builder setChildGroupConfig(EventExecutorsConfig executorsConfig)
     {
-      Objects.requireNonNull(childGroupConfig);
-      instance.childGroupConfig = childGroupConfig;
+      Objects.requireNonNull(executorsConfig);
+      instance.childGroupConfig = executorsConfig;
       return this;
     }
     
@@ -141,7 +152,14 @@ public final class ServerConfiguration
       return this;
     }
     
-    public Builder setRequestHandler(RequestHandler requestHandler)
+    public Builder setMode(IoMode mode)
+    {
+      Objects.requireNonNull(mode);
+      instance.mode = mode;
+      return this;
+    }
+    
+    public Builder setRequestHandler(RequestHandler<?> requestHandler)
     {
       Objects.requireNonNull(requestHandler);
       instance.requestHandler = requestHandler;
@@ -164,8 +182,8 @@ public final class ServerConfiguration
     
     private void assertValidState()
     {
-      if (instance.bossGroupConfig == null) {
-        throw new IllegalStateException("Missing boss event loop group configuration");
+      if (instance.isBlockingIo() && instance.blockingExecutorsConfig == null) {
+        instance.blockingExecutorsConfig = ExecutorsGroupConfig.defaultConfig();
       }
       if (instance.childGroupConfig == null) {
         throw new IllegalStateException("Missing child event loop group configuration");

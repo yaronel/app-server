@@ -24,7 +24,7 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
     ChannelPipeline pipeline = ch.pipeline();
     pipeline.addLast("codec", new HttpServerCodec())
             .addLast("metrics", new HttpServerMetricsHandler(config.metricsCollector()));
-  
+    
     if (config.isCompress()) {
       pipeline.addLast("inflate", new HttpContentDecompressor())
               .addLast("deflate", new HttpContentCompressor());
@@ -35,7 +35,13 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
             .addLast("write-timeout", new WriteTimeoutHandler(
                 (int) config.writeTimeout().getSeconds()))
             .addLast("full-html-request-decoder", FullHtmlRequestDecoder.INSTANCE)
-            .addLast("full-html-response-encoder", FullHtmlResponseEncoder.INSTANCE)
-            .addLast("handler", config.inboundHandler());
+            .addLast("full-html-response-encoder", FullHtmlResponseEncoder.INSTANCE);
+    
+    if (config.hasEventExecutors()) {
+      pipeline.addLast(config.eventExecutors(), "app-handler", config.inboundHandler());
+    }
+    else {
+      pipeline.addLast("app-handler", config.inboundHandler());
+    }
   }
 }

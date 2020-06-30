@@ -1,27 +1,29 @@
 package com.appsflyer.rta.httpserver;
 
-public class EventLoopConfiguration
+public final class EventLoopGroupConfig implements EventExecutorsConfig
 {
   private final String name;
   private final int threadCount;
   
-  public EventLoopConfiguration(int threadCount)
-  {
-    this(threadCount, "NioEventLoop");
-  }
-  
   @SuppressWarnings("WeakerAccess")
-  public EventLoopConfiguration(int threadCount, String name)
+  public EventLoopGroupConfig(int threadCount, String name)
   {
     this.name = name;
     this.threadCount = threadCount;
   }
   
+  public EventLoopGroupConfig(int threadCount)
+  {
+    this(threadCount, "NioEventLoop");
+  }
+  
+  @Override
   public final String name()
   {
     return name;
   }
   
+  @Override
   public final int threadCount()
   {
     return threadCount;

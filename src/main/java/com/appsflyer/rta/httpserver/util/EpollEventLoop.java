@@ -1,6 +1,6 @@
 package com.appsflyer.rta.httpserver.util;
 
-import com.appsflyer.rta.httpserver.EventLoopConfiguration;
+import com.appsflyer.rta.httpserver.EventExecutorsConfig;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -12,7 +12,7 @@ public class EpollEventLoop implements NativeEventLoop
   EpollEventLoop() {}
   
   @Override
-  public final EventLoopGroup newGroup(EventLoopConfiguration config)
+  public final EventLoopGroup newGroup(EventExecutorsConfig config)
   {
     return new EpollEventLoopGroup(config.threadCount(), newThreadFactory(config));
   }
