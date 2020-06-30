@@ -1,4 +1,3 @@
-# AppsFlyer Netty
+# RTA Application Server
 
-#### Abstraction over [Netty](https://github.com/netty/netty) HTTP server 
-
+An opinionated lightweight HTTP server. Exposes a simple API over [Netty](https://netty.io).

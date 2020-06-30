@@ -5,9 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.appsflyer.rta</groupId>
-    <artifactId>http-server</artifactId>
+    <artifactId>app-server</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>RTA Http Server</name>
+    <name>RTA Application Server</name>
+    <description>Http application server built on top of Netty</description>
     <packaging>jar</packaging>
 
     <properties>
