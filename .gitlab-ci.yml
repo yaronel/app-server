@@ -1,0 +1,74 @@
+image: artifactory.appsflyer.com:5000/base-images/java:14.0.1_7-jdk-alpine
+
+variables:
+  MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  RELEASE_VERSION_REGEX: '^[0-9]{1,2}[.][0-9]{1,2}[.][0-9]{1,3}$'
+  SNAPSHOT_VERSION_REGEX: '^[0-9]{1,2}[.][0-9]{1,2}[.][0-9]{1,3}-SNAPSHOT$'
+
+cache:
+  paths:
+    - .m2/repository/
+    - target/
+
+stages:
+  - dependencies
+  - build
+  - test
+  - deploy
+
+apk:
+  stage: dependencies
+  script:
+    - apk --update-cache add maven=3.6.3-r0
+
+clean:
+  stage: build
+  script:
+    - mvn $MAVEN_CLI_OPTS clean
+
+build:
+  stage: build
+  script:
+    - mvn $MAVEN_CLI_OPTS compile
+
+test:
+  stage: test
+  script:
+    - mvn $MAVEN_CLI_OPTS test
+  artifacts:
+    reports:
+      junit:
+        target/junit.xml
+
+.deploy:
+  stage: deploy
+  before_script:
+    - echo "Executed by" $GITLAB_USER_NAME "on branch:" $CI_COMMIT_REF_NAME
+    - export VERSION=$(less pom.xml| grep "<version>"| head -1| cut -d">" -f2| cut -d"<" -f1)
+    - if [[ !("$VERSION" =~ $REGEXP) ]]; then echo "Library version" $VERSION "is not valid"; exit 1; fi
+  script:
+    - mvn $MAVEN_CLI_OPTS deploy
+    - echo "version" $VERSION "successfully deployed"
+
+deploy release:
+  extends: .deploy
+  variables:
+    REGEXP: '^[0-9]{1,2}[.][0-9]{1,2}[.][0-9]{1,3}$'
+  only:
+    - branches
+    - merge_requests
+    - master
+
+deploy snapshot:
+  extends: .deploy
+  variables:
+    REGEXP: '^[0-9]{1,2}[.][0-9]{1,2}[.][0-9]{1,3}-SNAPSHOT$'
+  only:
+    - branches
+    - merge_requests
+  except:
+    - master
+
+
+
