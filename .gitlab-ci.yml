@@ -10,21 +10,17 @@ cache:
   paths:
     - .m2/repository/
     - target/
+  key: "$CI_BUILD_REF_NAME"
 
 stages:
   - build
   - test
   - deploy
 
-clean:
-  stage: build
-  script:
-    - mvn $MAVEN_CLI_OPTS clean
-
 build:
   stage: build
   script:
-    - mvn $MAVEN_CLI_OPTS compile
+    - mvn $MAVEN_CLI_OPTS clean compile
 
 test:
   stage: test
@@ -32,8 +28,9 @@ test:
     - mvn $MAVEN_CLI_OPTS test
   artifacts:
     reports:
-      junit:
-        target/junit.xml
+      junit: target/surefire-reports/TEST-*.xml
+    paths:
+      - target/surefire-reports/TEST-*.xml
 
 .deploy:
   stage: deploy
