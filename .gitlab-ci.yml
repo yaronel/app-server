@@ -42,20 +42,20 @@ test:
   stage: deploy
   before_script:
     - echo "Executed by" $GITLAB_USER_NAME "on branch:" $CI_COMMIT_REF_NAME
-    - export VERSION=$(less pom.xml| grep "<version>"| head -1| cut -d">" -f2| cut -d"<" -f1)
-    - if [[ !("$VERSION" =~ $REGEXP) ]]; then echo "Library version" $VERSION "is not valid"; exit 1; fi
+  #    - export VERSION=$(less pom.xml| grep "<version>"| head -1| cut -d">" -f2| cut -d"<" -f1)
+  #    - if [[ !("$VERSION" =~ $REGEXP) ]]; then echo "Library version" $VERSION "is not valid"; exit 1; fi
   script:
     - mvn $MAVEN_CLI_OPTS deploy
     - echo "version" $VERSION "successfully deployed"
 
-deploy release:
-  extends: .deploy
-  variables:
-    REGEXP: '^[0-9]{1,2}[.][0-9]{1,2}[.][0-9]{1,3}$'
-  only:
-    - branches
-    - merge_requests
-    - master
+#deploy release:
+#  extends: .deploy
+#  variables:
+#    REGEXP: '^[0-9]{1,2}[.][0-9]{1,2}[.][0-9]{1,3}$'
+#  only:
+#    - branches
+#    - merge_requests
+#    - master
 
 deploy snapshot:
   extends: .deploy
