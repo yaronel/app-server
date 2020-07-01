@@ -30,7 +30,8 @@
             </releases>
         </repository>
         <repository>
-            <id>releases</id>
+            <id>appsflyer</id>
+            <name>AppsFlyer Artifactory</name>
             <url>https://artifactory.appsflyer.com/artifactory/maven/</url>
             <snapshots>
                 <enabled>true</enabled>
@@ -40,6 +41,14 @@
             </releases>
         </repository>
     </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>appsflyer</id>
+            <!--suppress UnresolvedMavenProperty -->
+            <url>${env.MAVEN_REPO_URL}</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>
@@ -75,7 +84,6 @@
             <version>2.2</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
