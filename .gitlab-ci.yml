@@ -6,21 +6,18 @@ variables:
   RELEASE_VERSION_REGEX: '^[0-9]{1,2}[.][0-9]{1,2}[.][0-9]{1,3}$'
   SNAPSHOT_VERSION_REGEX: '^[0-9]{1,2}[.][0-9]{1,2}[.][0-9]{1,3}-SNAPSHOT$'
 
+before_script:
+  - apk --update-cache add maven=3.6.3-r0
+
 cache:
   paths:
     - .m2/repository/
     - target/
 
 stages:
-  - dependencies
   - build
   - test
   - deploy
-
-apk:
-  stage: dependencies
-  script:
-    - apk --update-cache add maven=3.6.3-r0
 
 clean:
   stage: build
