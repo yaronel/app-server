@@ -20,7 +20,7 @@
 
     <repositories>
         <repository>
-            <id>central</id>
+            <id>central1</id>
             <url>https://repo1.maven.org/maven2/</url>
             <snapshots>
                 <enabled>false</enabled>
@@ -30,7 +30,7 @@
             </releases>
         </repository>
         <repository>
-            <id>appsflyer</id>
+            <id>central</id>
             <name>AppsFlyer Artifactory</name>
             <url>https://artifactory.appsflyer.com/artifactory/maven/</url>
             <snapshots>
@@ -44,7 +44,7 @@
 
     <distributionManagement>
         <repository>
-            <id>appsflyer</id>
+            <id>central</id>
             <!--suppress UnresolvedMavenProperty -->
             <url>${env.MAVEN_REPO_URL}</url>
         </repository>
