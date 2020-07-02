@@ -80,7 +80,7 @@ public class HttpServerMetricsHandler extends ChannelDuplexHandler
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
   {
     metricsCollector.markErrorHit();
-    ctx.fireExceptionCaught(cause);
+    ctx.close();
   }
   
   private void sumMetrics(Future<? super Void> future)

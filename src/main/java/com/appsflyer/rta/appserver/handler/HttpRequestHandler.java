@@ -21,7 +21,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter
   
   private static void logException(Throwable cause)
   {
-    logger.error(cause.getMessage());
+    logger.error("Unhandled exception", cause);
     Throwable[] suppressed = cause.getSuppressed();
     if (suppressed.length > 0) {
       logger.error("Printing suppressed exceptions:");

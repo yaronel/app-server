@@ -99,7 +99,9 @@ public final class DefaultHttpServer implements HttpServer
     EventLoopGroup group = bootstrap.config().group();
     if (!group.isShuttingDown() && !group.isShutdown()) {
       if (group.shutdownGracefully().awaitUninterruptibly(5L, TimeUnit.SECONDS)) {
-        logger.info("Server is down");
+        if (group.isTerminated()) {
+          logger.info("Server is down");
+        }
       }
     }
   }
