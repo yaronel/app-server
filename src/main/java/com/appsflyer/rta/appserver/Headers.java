@@ -4,6 +4,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.util.Recycler;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public final class Headers implements Recyclable
@@ -37,7 +38,7 @@ public final class Headers implements Recyclable
     var iter = impl.iteratorAsString();
     while (iter.hasNext()) {
       var entry = iter.next();
-      res.put(entry.getKey(), entry.getValue());
+      res.put(entry.getKey().toLowerCase(Locale.US), entry.getValue());
     }
     
     return res;
