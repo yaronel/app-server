@@ -36,7 +36,7 @@ test:
   stage: deploy
   before_script:
     - echo "Executed by" $GITLAB_USER_NAME "on branch:" $CI_COMMIT_REF_NAME
-    - export VERSION=$(less pom.xml| grep "<version>"| head -1| cut -d">" -f2| cut -d"<" -f1)
+    - export VERSION=$(cat pom.xml | grep "<version>" | head -1| cut -d">" -f2| cut -d"<" -f1)
     - if [[ !("$VERSION" =~ $REGEXP) ]]; then echo "Library version" $VERSION "is not valid"; exit 1; fi
   script:
     - mvn $MAVEN_CLI_OPTS deploy
