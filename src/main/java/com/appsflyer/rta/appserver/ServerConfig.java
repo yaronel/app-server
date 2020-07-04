@@ -7,17 +7,11 @@ import com.appsflyer.rta.appserver.metrics.MetricsCollectorFactory;
 import java.time.Duration;
 import java.util.Objects;
 
-import static com.appsflyer.rta.appserver.ServerConfig.IoMode.BLOCKING;
+import static com.appsflyer.rta.appserver.HandlerMode.BLOCKING;
 
 @SuppressWarnings("ClassWithTooManyFields")
 public final class ServerConfig
 {
-  
-  public enum IoMode
-  {
-    NON_BLOCKING,
-    BLOCKING
-  }
   
   private int port;
   private EventExecutorsConfig blockingExecutorsConfig;
@@ -27,7 +21,7 @@ public final class ServerConfig
   private boolean compress;
   private int maxContentLength = 1048576;
   private String host = "localhost";
-  private IoMode mode = BLOCKING;
+  private HandlerMode mode = BLOCKING;
   private Duration connectTimeout = Duration.ofSeconds(30L);
   private Duration readTimeout = Duration.ofSeconds(10L);
   private Duration writeTimeout = Duration.ofSeconds(10L);
@@ -76,17 +70,17 @@ public final class ServerConfig
     return writeTimeout;
   }
   
-  MetricsCollector metricsCollector()
+  public MetricsCollector metricsCollector()
   {
     return metricsCollector;
   }
   
-  public IoMode mode()
+  public HandlerMode mode()
   {
     return mode;
   }
   
-  RequestHandler requestHandler()
+  public RequestHandler requestHandler()
   {
     return requestHandler;
   }
@@ -167,7 +161,7 @@ public final class ServerConfig
       return this;
     }
     
-    public Builder setMode(IoMode mode)
+    public Builder setMode(HandlerMode mode)
     {
       Objects.requireNonNull(mode);
       instance.mode = mode;

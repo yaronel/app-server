@@ -2,8 +2,9 @@ package com.appsflyer.rta.appserver;
 
 import com.appsflyer.rta.appserver.codec.FullHtmlRequestDecoder;
 import com.appsflyer.rta.appserver.codec.FullHtmlResponseEncoder;
-import com.appsflyer.rta.appserver.handler.HttpRequestHandler;
 import com.appsflyer.rta.appserver.handler.HttpServerMetricsHandler;
+import com.appsflyer.rta.appserver.handler.RequestHandlerFactory;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -16,12 +17,12 @@ import io.netty.util.concurrent.EventExecutorGroup;
 class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
 {
   private final ServerConfig config;
-  private final HttpRequestHandler inboundHandler;
+  private final ChannelInboundHandlerAdapter inboundHandler;
   
   HttpChannelInitializer(ServerConfig config)
   {
     this.config = config;
-    inboundHandler = new HttpRequestHandler(config.requestHandler(), config.metricsCollector());
+    inboundHandler = RequestHandlerFactory.newInstance(config);
   }
   
   private EventExecutorGroup createEventExecutorsGroup()

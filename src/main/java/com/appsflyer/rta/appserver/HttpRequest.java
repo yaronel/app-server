@@ -46,9 +46,9 @@ public final class HttpRequest implements Recyclable
     this.handle = handle;
   }
   
-  public Headers headers()
+  public Map<String, String> headers()
   {
-    return headers;
+    return headers.getAll();
   }
   
   public String scheme()

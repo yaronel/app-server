@@ -117,7 +117,7 @@ class FullHtmlRequestDecoderTest
     writeInbound(request);
     
     com.appsflyer.rta.appserver.HttpRequest output = channel.readInbound();
-    Map<String, String> decodedHeaders = output.headers().getAll();
+    Map<String, String> decodedHeaders = output.headers();
     
     headers.entries().forEach(
         entry -> assertEquals(entry.getValue(), decodedHeaders.get(entry.getKey())));
@@ -130,7 +130,7 @@ class FullHtmlRequestDecoderTest
   {
     writeInbound(newRequest(EMPTY_BYTES));
     HttpRequest output = channel.readInbound();
-    assertTrue(output.headers().getAll().isEmpty());
+    assertTrue(output.headers().isEmpty());
     output.recycle();
   }
 }
