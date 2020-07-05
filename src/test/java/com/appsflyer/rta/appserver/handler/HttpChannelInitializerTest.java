@@ -1,5 +1,8 @@
-package com.appsflyer.rta.appserver;
+package com.appsflyer.rta.appserver.handler;
 
+import com.appsflyer.rta.appserver.ExecutorsGroupConfig;
+import com.appsflyer.rta.appserver.HandlerMode;
+import com.appsflyer.rta.appserver.ServerConfig;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -10,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 
-import static com.appsflyer.rta.appserver.HttpChannelInitializer.*;
+import static com.appsflyer.rta.appserver.handler.HttpChannelInitializer.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

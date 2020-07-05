@@ -1,9 +1,9 @@
-package com.appsflyer.rta.appserver;
+package com.appsflyer.rta.appserver.handler;
 
+import com.appsflyer.rta.appserver.EventExecutorsConfig;
+import com.appsflyer.rta.appserver.ServerConfig;
 import com.appsflyer.rta.appserver.codec.FullHtmlRequestDecoder;
 import com.appsflyer.rta.appserver.codec.FullHtmlResponseEncoder;
-import com.appsflyer.rta.appserver.handler.HttpServerMetricsHandler;
-import com.appsflyer.rta.appserver.handler.RequestHandlerFactory;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -14,7 +14,7 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.EventExecutorGroup;
 
-class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
+public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
 {
   private final ServerConfig config;
   private final ChannelInboundHandlerAdapter inboundHandler;
@@ -29,7 +29,7 @@ class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
   static final String RESPONSE_ENCODER = "full-html-response-encoder";
   static final String APP_HANDLER = "ap-handler";
   
-  HttpChannelInitializer(ServerConfig config)
+  public HttpChannelInitializer(ServerConfig config)
   {
     this.config = config;
     inboundHandler = RequestHandlerFactory.newInstance(config);

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
+@SuppressWarnings("WeakerAccess")
 @ChannelHandler.Sharable
 public class AsyncRequestHandler extends ChannelInboundHandlerAdapter
 {

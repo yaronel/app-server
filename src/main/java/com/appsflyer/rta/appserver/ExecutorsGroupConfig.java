@@ -9,7 +9,7 @@ public final class ExecutorsGroupConfig implements EventExecutorsConfig
    * @return The default configuration with a thread count of 2 x number of processors.
    */
   @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
-  static EventExecutorsConfig defaultConfig()
+  public static EventExecutorsConfig defaultConfig()
   {
     return new ExecutorsGroupConfig(
         Runtime.getRuntime().availableProcessors() << 1);

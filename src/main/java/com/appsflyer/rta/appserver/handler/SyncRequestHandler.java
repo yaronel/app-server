@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 
+@SuppressWarnings("WeakerAccess")
 @ChannelHandler.Sharable
 public class SyncRequestHandler extends ChannelInboundHandlerAdapter
 {

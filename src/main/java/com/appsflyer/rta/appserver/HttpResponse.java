@@ -9,7 +9,7 @@ import java.util.Objects;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-@SuppressWarnings({"InstanceVariableMayNotBeInitialized", "WeakerAccess"})
+@SuppressWarnings("InstanceVariableMayNotBeInitialized")
 public final class HttpResponse implements Recyclable
 {
   private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];

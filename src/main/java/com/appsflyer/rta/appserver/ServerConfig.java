@@ -10,7 +10,7 @@ import java.util.Objects;
 import static com.appsflyer.rta.appserver.HandlerMode.BLOCKING;
 
 @SuppressWarnings({"ClassWithTooManyFields",
-    "ClassWithOnlyPrivateConstructors"})
+    "ClassWithOnlyPrivateConstructors", "WeakerAccess"})
 public class ServerConfig
 {
   
@@ -31,32 +31,32 @@ public class ServerConfig
   {
   }
   
-  int port()
+  public int port()
   {
     return port;
   }
   
-  String host()
+  public String host()
   {
     return host;
   }
   
-  boolean isCompress()
+  public boolean isCompress()
   {
     return compress;
   }
   
-  EventExecutorsConfig blockingExecutorsConfig()
+  public EventExecutorsConfig blockingExecutorsConfig()
   {
     return blockingExecutorsConfig;
   }
   
-  EventExecutorsConfig childGroupConfig()
+  public EventExecutorsConfig childGroupConfig()
   {
     return childGroupConfig;
   }
   
-  Duration connectTimeout()
+  public Duration connectTimeout()
   {
     return connectTimeout;
   }
@@ -66,7 +66,7 @@ public class ServerConfig
     return readTimeout;
   }
   
-  Duration writeTimeout()
+  public Duration writeTimeout()
   {
     return writeTimeout;
   }
@@ -86,12 +86,12 @@ public class ServerConfig
     return requestHandler;
   }
   
-  boolean isBlockingIo()
+  public boolean isBlockingIo()
   {
     return mode == BLOCKING;
   }
   
-  int maxContentLength()
+  public int maxContentLength()
   {
     return maxContentLength;
   }
