@@ -18,6 +18,16 @@ class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
 {
   private final ServerConfig config;
   private final ChannelInboundHandlerAdapter inboundHandler;
+  static final String SERVER_CODEC = "codec";
+  static final String METRICS_HANDLER = "metrics";
+  static final String DECOMPRESSOR = "inflate";
+  static final String COMPRESSOR = "deflate";
+  static final String KEEP_ALIVE_HANDLER = "keep-alive";
+  static final String AGGREGATOR_HANDLER = "aggregator";
+  static final String WRITE_TIMEOUT_HANDLER = "write-timeout";
+  static final String REQUEST_DECODER = "full-html-request-decoder";
+  static final String RESPONSE_ENCODER = "full-html-response-encoder";
+  static final String APP_HANDLER = "ap-handler";
   
   HttpChannelInitializer(ServerConfig config)
   {
@@ -37,26 +47,26 @@ class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
   protected void initChannel(SocketChannel ch)
   {
     ChannelPipeline pipeline = ch.pipeline();
-    pipeline.addLast("codec", new HttpServerCodec())
-            .addLast("metrics", new HttpServerMetricsHandler(config.metricsCollector()));
-    
+    pipeline.addLast(SERVER_CODEC, new HttpServerCodec())
+            .addLast(METRICS_HANDLER, new HttpServerMetricsHandler(config.metricsCollector()));
+  
     if (config.isCompress()) {
-      pipeline.addLast("inflate", new HttpContentDecompressor())
-              .addLast("deflate", new HttpContentCompressor());
+      pipeline.addLast(DECOMPRESSOR, new HttpContentDecompressor())
+              .addLast(COMPRESSOR, new HttpContentCompressor());
     }
-    
-    pipeline.addLast("keep-alive", new HttpServerKeepAliveHandler())
-            .addLast("aggregator", new HttpObjectAggregator(config.maxContentLength()))
-            .addLast("write-timeout", new WriteTimeoutHandler(
+  
+    pipeline.addLast(KEEP_ALIVE_HANDLER, new HttpServerKeepAliveHandler())
+            .addLast(AGGREGATOR_HANDLER, new HttpObjectAggregator(config.maxContentLength()))
+            .addLast(WRITE_TIMEOUT_HANDLER, new WriteTimeoutHandler(
                 (int) config.writeTimeout().getSeconds()))
-            .addLast("full-html-request-decoder", FullHtmlRequestDecoder.INSTANCE)
-            .addLast("full-html-response-encoder", FullHtmlResponseEncoder.INSTANCE);
-    
+            .addLast(REQUEST_DECODER, FullHtmlRequestDecoder.INSTANCE)
+            .addLast(RESPONSE_ENCODER, FullHtmlResponseEncoder.INSTANCE);
+  
     if (config.isBlockingIo()) {
-      pipeline.addLast(createEventExecutorsGroup(), "app-handler", inboundHandler);
+      pipeline.addLast(createEventExecutorsGroup(), APP_HANDLER, inboundHandler);
     }
     else {
-      pipeline.addLast("app-handler", inboundHandler);
+      pipeline.addLast(APP_HANDLER, inboundHandler);
     }
   }
 }

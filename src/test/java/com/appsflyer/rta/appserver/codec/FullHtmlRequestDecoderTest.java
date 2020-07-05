@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @SuppressWarnings("StringConcatenation")
 class FullHtmlRequestDecoderTest
 {
-  private static final byte[] EMPTY_BYTES = new byte[0];
   private EmbeddedChannel channel;
   
   @BeforeEach

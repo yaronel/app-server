@@ -9,8 +9,9 @@ import java.util.Objects;
 
 import static com.appsflyer.rta.appserver.HandlerMode.BLOCKING;
 
-@SuppressWarnings("ClassWithTooManyFields")
-public final class ServerConfig
+@SuppressWarnings({"ClassWithTooManyFields",
+    "ClassWithOnlyPrivateConstructors"})
+public class ServerConfig
 {
   
   private int port;
