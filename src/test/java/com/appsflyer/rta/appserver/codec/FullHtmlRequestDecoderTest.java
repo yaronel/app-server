@@ -1,9 +1,7 @@
 package com.appsflyer.rta.appserver.codec;
 
 import com.appsflyer.rta.appserver.HttpRequest;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
-import io.netty.buffer.UnpooledHeapByteBuf;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.*;
 import org.junit.jupiter.api.AfterEach;
@@ -11,10 +9,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Map;
 
+import static com.appsflyer.rta.appserver.TestUtil.*;
 import static io.netty.handler.codec.http.HttpHeaderNames.*;
-import static java.nio.charset.StandardCharsets.UTF_16;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -53,15 +52,6 @@ class FullHtmlRequestDecoderTest
   private void writeInbound(FullHttpRequest request)
   {
     assertTrue(channel.writeInbound(request));
-    
-  }
-  
-  private static byte[] intToBytes(int n)
-  {
-    return new UnpooledHeapByteBuf(
-        ByteBufAllocator.DEFAULT, 4, 4)
-        .writeInt(n)
-        .array();
   }
   
   private void validateContentDecoded(byte[] content) throws IOException
@@ -96,41 +86,47 @@ class FullHtmlRequestDecoderTest
     validateContentDecoded("OK".getBytes(UTF_8));
     validateContentDecoded("".getBytes(UTF_8));
     validateContentDecoded(" ".getBytes(UTF_8));
-    validateContentDecoded("\uD83D\uDE00 \uD83D\uDE03 \uD83D\uDE04".getBytes(UTF_16));
-    validateContentDecoded(
-        ("ᚠᛇᚻ᛫ᛒᛦᚦ᛫ᚠᚱᚩᚠᚢᚱ᛫ᚠᛁᚱᚪ᛫ᚷᛖᚻᚹᛦᛚᚳᚢᛗ" +
-            "ᛋᚳᛖᚪᛚ᛫ᚦᛖᚪᚻ᛫ᛗᚪᚾᚾᚪ᛫ᚷᛖᚻᚹᛦᛚᚳ᛫ᛗᛁᚳᛚᚢᚾ᛫ᚻᛦᛏ᛫ᛞᚫᛚᚪᚾ" +
-            "ᚷᛁᚠ᛫ᚻᛖ᛫ᚹᛁᛚᛖ᛫ᚠᚩᚱ᛫ᛞᚱᛁᚻᛏᚾᛖ᛫ᛞᚩᛗᛖᛋ᛫ᚻᛚᛇᛏᚪᚾ᛬").getBytes(UTF_16));
+    validateContentDecoded(EMOJIS);
+    validateContentDecoded(UTF_16_CHARACTERS);
   }
   
   @Test
-  void decodesHeaderValuesAsString()
+  void decodesHeaderNamesToLowerCase()
   {
-    var headers = new DefaultHttpHeaders().add(ACCEPT, HttpHeaderValues.TEXT_HTML)
-                                          .addInt(AGE, 86000)
-                                          .addShort(DNT, (short) 1)
-                                          .add(HOST, "com.example.app")
-                                          .add(LOCATION, "com.example.login");
+    var headers = new DefaultHttpHeaders()
+        .add(ACCEPT, HttpHeaderValues.TEXT_HTML)
+        .addInt(AGE, 86000)
+        .addShort(DNT, (short) 1)
+        .add(HOST, "com.example.app")
+        .add(LOCATION, "com.example.login");
     
     FullHttpRequest request = newRequest(EMPTY_BYTES);
     request.headers().add(headers);
-    writeInbound(request);
     
-    com.appsflyer.rta.appserver.HttpRequest output = channel.readInbound();
-    Map<String, String> decodedHeaders = output.headers();
-    
-    headers.entries().forEach(
-        entry -> assertEquals(entry.getValue(), decodedHeaders.get(entry.getKey())));
-    
-    output.recycle();
+    validateHeadersDecoded(request);
   }
   
   @Test
   void decodesEmptyHeaders()
   {
-    writeInbound(newRequest(EMPTY_BYTES));
-    HttpRequest output = channel.readInbound();
-    assertTrue(output.headers().isEmpty());
+    validateHeadersDecoded(newRequest(EMPTY_BYTES));
+  }
+  
+  private void validateHeadersDecoded(FullHttpRequest original)
+  {
+    HttpHeaders originalHeaders = original.headers();
+    
+    writeInbound(original);
+    
+    var output = (HttpRequest) channel.readInbound();
+    Map<String, String> decodedHeaders = output.headers();
+    
+    assertEquals(originalHeaders.size(), decodedHeaders.size());
+    
+    for (Map.Entry<String, String> header : originalHeaders.entries()) {
+      String name = header.getKey().toLowerCase(Locale.ENGLISH);
+      assertEquals(header.getValue(), decodedHeaders.get(name));
+    }
     output.recycle();
   }
 }
