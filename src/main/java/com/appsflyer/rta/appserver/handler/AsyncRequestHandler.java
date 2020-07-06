@@ -1,7 +1,6 @@
 package com.appsflyer.rta.appserver.handler;
 
 import com.appsflyer.rta.appserver.HttpRequest;
-import com.appsflyer.rta.appserver.HttpResponse;
 import com.appsflyer.rta.appserver.metrics.MetricsCollector;
 import com.appsflyer.rta.appserver.util.HandlerUtil;
 import io.netty.channel.ChannelHandler;
@@ -11,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("WeakerAccess")
 @ChannelHandler.Sharable
@@ -23,7 +21,6 @@ public class AsyncRequestHandler extends ChannelInboundHandlerAdapter
   
   public AsyncRequestHandler(RequestHandler requestHandler, MetricsCollector metricsCollector)
   {
-    
     this.requestHandler = requestHandler;
     this.metricsCollector = metricsCollector;
   }
@@ -33,19 +30,22 @@ public class AsyncRequestHandler extends ChannelInboundHandlerAdapter
   {
     HttpRequest request = (HttpRequest) msg;
     var startTime = System.nanoTime();
-    CompletableFuture<HttpResponse> futureResponse = requestHandler.applyAsync(request);
     //noinspection OverlyLongLambda
-    futureResponse.handle((httpResponse, throwable) -> {
-      metricsCollector.recordServiceLatency(Duration.ofNanos(System.nanoTime() - startTime));
-      if (throwable == null) {
-        ctx.write(httpResponse, ctx.voidPromise());
-      }
-      else {
-        exceptionCaught(ctx, throwable);
-      }
-      request.recycle();
-      return httpResponse;
-    });
+    requestHandler
+        .applyAsync(request)
+        .handle((response, throwable) -> {
+          metricsCollector.recordServiceLatency(Duration.ofNanos(System.nanoTime() - startTime));
+          if (throwable == null) {
+            ctx.write(response, ctx.voidPromise());
+          }
+          else {
+            exceptionCaught(ctx, throwable);
+            ctx.write(HandlerUtil.createServerError(), ctx.voidPromise());
+          }
+          request.recycle();
+          //noinspection ReturnOfNull
+          return null;
+        });
   }
   
   @Override

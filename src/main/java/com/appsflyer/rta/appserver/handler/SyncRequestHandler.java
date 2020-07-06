@@ -55,5 +55,6 @@ public class SyncRequestHandler extends ChannelInboundHandlerAdapter
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
   {
     HandlerUtil.logException(logger, cause);
+    ctx.write(HandlerUtil.createServerError());
   }
 }
