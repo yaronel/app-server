@@ -1,15 +1,16 @@
 package com.appsflyer.rta.appserver;
 
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpVersion;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -37,32 +38,6 @@ class HttpRequestTest
     assertEquals(List.of("foo", "bar"), queryParameters.get("name"));
     assertEquals(List.of("Hello World(!)"), queryParameters.get("greet"));
     assertEquals(List.of("{\"type\":\"json\"}"), queryParameters.get("bar"));
-    
-    request.recycle();
-  }
-  
-  @Test
-  void decodes_X_WWW_FORM_URLENCODED_Parameters()
-  {
-    var query = "name=foo&name=bar&greet=Hello World(!)&bar={\"type\":\"json\"}";
-    var encodedQuery = "name%3Dfoo%26name%3Dbar%26greet%3DHello%20World(!)%26bar%3D%7B%22type%22%3A%22json%22%7D";
-    
-    FullHttpRequest originalRequest = new DefaultFullHttpRequest(
-        HttpVersion.HTTP_1_1,
-        HttpMethod.POST,
-        url,
-        Unpooled.wrappedBuffer(encodedQuery.getBytes(UTF_8)),
-        new DefaultHttpHeaders().add(
-            HttpHeaderNames.CONTENT_TYPE,
-            HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED),
-        EmptyHttpHeaders.INSTANCE
-    );
-    
-    HttpRequest request = HttpRequest.newInstance(originalRequest, mock(Channel.class));
-    
-    assertEquals(url, request.path());
-    assertEquals("POST", request.method());
-    assertEquals(query, request.asString());
     
     request.recycle();
   }
