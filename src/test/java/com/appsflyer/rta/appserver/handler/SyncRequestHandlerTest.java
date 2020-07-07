@@ -22,7 +22,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
@@ -69,7 +69,7 @@ class SyncRequestHandlerTest
     MetricsCollector metricsCollector = mock(MetricsCollector.class);
     doAnswer(invocationOnMock -> counter.incrementAndGet())
         .when(metricsCollector)
-        .recordServiceLatency(any());
+        .recordServiceLatency(anyLong());
     
     channel.pipeline().addLast(
         new SyncRequestHandler(exceptionalStubHandler(), metricsCollector));

@@ -1,7 +1,5 @@
 package com.appsflyer.rta.appserver.metrics;
 
-import java.time.Duration;
-
 public interface MetricsCollector
 {
   void markHit();
@@ -10,15 +8,15 @@ public interface MetricsCollector
   
   void markErrorHit();
   
-  void recordSendLatency(Duration duration);
+  void recordSendLatency(long nanos);
   
   void markSentBytes(long n);
   
-  void recordReceiveLatency(Duration duration);
+  void recordReceiveLatency(long nanos);
   
-  void recordResponseLatency(Duration duration);
+  void recordResponseLatency(long nanos);
   
-  void recordServiceLatency(Duration duration);
+  void recordServiceLatency(long nanos);
   
   void markBytesReceived(long n);
 }

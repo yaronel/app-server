@@ -3,6 +3,7 @@ package com.appsflyer.rta.appserver.util;
 import com.appsflyer.rta.appserver.HttpResponse;
 import io.netty.util.AsciiString;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Map;
@@ -12,6 +13,7 @@ import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_PLAIN;
 
 public final class HandlerUtil
 {
+  private static final Logger logger = LoggerFactory.getLogger(HandlerUtil.class);
   private static final byte[] INTERNAL_SERVER_ERROR =
       AsciiString.of("Internal Server Error").toByteArray();
   private static final Map<String, String> INTERNAL_SERVER_ERROR_HEADERS =
@@ -19,7 +21,7 @@ public final class HandlerUtil
   
   private HandlerUtil() {}
   
-  public static void logException(Logger logger, Throwable cause)
+  public static void logException(Throwable cause)
   {
     logger.error("Unhandled exception", cause);
     Throwable[] suppressed = cause.getSuppressed();

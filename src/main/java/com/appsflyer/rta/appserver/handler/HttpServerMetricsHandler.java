@@ -12,8 +12,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.concurrent.Future;
 
-import java.time.Duration;
-
 public class HttpServerMetricsHandler extends ChannelDuplexHandler
 {
   private long bytesReceived;
@@ -22,7 +20,7 @@ public class HttpServerMetricsHandler extends ChannelDuplexHandler
   private long sendLatency;
   private final MetricsCollector metricsCollector;
   
-  public HttpServerMetricsHandler(MetricsCollector metricsCollector)
+  HttpServerMetricsHandler(MetricsCollector metricsCollector)
   {
     this.metricsCollector = metricsCollector;
   }
@@ -67,7 +65,7 @@ public class HttpServerMetricsHandler extends ChannelDuplexHandler
     }
     
     if (msg instanceof LastHttpContent) {
-      metricsCollector.recordReceiveLatency(Duration.ofNanos(System.nanoTime() - receiveLatency));
+      metricsCollector.recordReceiveLatency(System.nanoTime() - receiveLatency);
       metricsCollector.markBytesReceived(bytesReceived);
       metricsCollector.markHit();
       bytesReceived = 0;
@@ -85,12 +83,12 @@ public class HttpServerMetricsHandler extends ChannelDuplexHandler
   
   private void sumMetrics(Future<? super Void> future)
   {
-    metricsCollector.recordSendLatency(Duration.ofNanos(System.nanoTime() - sendLatency));
+    metricsCollector.recordSendLatency(System.nanoTime() - sendLatency);
     if (receiveLatency == 0) {
-      metricsCollector.recordResponseLatency(Duration.ofNanos(System.nanoTime() - sendLatency));
+      metricsCollector.recordResponseLatency(System.nanoTime() - sendLatency);
     }
     else {
-      metricsCollector.recordResponseLatency(Duration.ofNanos(System.nanoTime() - receiveLatency));
+      metricsCollector.recordResponseLatency(System.nanoTime() - receiveLatency);
     }
     metricsCollector.markSentBytes(bytesSent);
     metricsCollector.markSuccessHit();

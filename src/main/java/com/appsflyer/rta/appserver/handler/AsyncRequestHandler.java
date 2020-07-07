@@ -6,16 +6,11 @@ import com.appsflyer.rta.appserver.util.HandlerUtil;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.time.Duration;
 
 @SuppressWarnings("WeakerAccess")
 @ChannelHandler.Sharable
 public class AsyncRequestHandler extends ChannelInboundHandlerAdapter
 {
-  private static final Logger logger = LoggerFactory.getLogger(AsyncRequestHandler.class);
   private final RequestHandler requestHandler;
   private final MetricsCollector metricsCollector;
   
@@ -34,13 +29,12 @@ public class AsyncRequestHandler extends ChannelInboundHandlerAdapter
     requestHandler
         .applyAsync(request)
         .handle((response, throwable) -> {
-          metricsCollector.recordServiceLatency(Duration.ofNanos(System.nanoTime() - startTime));
+          metricsCollector.recordServiceLatency(System.nanoTime() - startTime);
           if (throwable == null) {
             ctx.write(response, ctx.voidPromise());
           }
           else {
             exceptionCaught(ctx, throwable);
-            ctx.write(HandlerUtil.createServerError(), ctx.voidPromise());
           }
           request.recycle();
           //noinspection ReturnOfNull
@@ -58,6 +52,7 @@ public class AsyncRequestHandler extends ChannelInboundHandlerAdapter
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
   {
-    HandlerUtil.logException(logger, cause);
+    HandlerUtil.logException(cause);
+    ctx.write(HandlerUtil.createServerError(), ctx.voidPromise());
   }
 }

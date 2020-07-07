@@ -7,17 +7,11 @@ import com.appsflyer.rta.appserver.util.HandlerUtil;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.time.Duration;
 
 @SuppressWarnings("WeakerAccess")
 @ChannelHandler.Sharable
 public class SyncRequestHandler extends ChannelInboundHandlerAdapter
 {
-  private static final Logger logger = LoggerFactory.getLogger(SyncRequestHandler.class);
-  
   private final RequestHandler requestHandler;
   private final MetricsCollector metricsCollector;
   
@@ -34,10 +28,10 @@ public class SyncRequestHandler extends ChannelInboundHandlerAdapter
     var startTime = System.nanoTime();
     try {
       HttpResponse response = requestHandler.apply(request);
-      metricsCollector.recordServiceLatency(Duration.ofNanos(System.nanoTime() - startTime));
+      metricsCollector.recordServiceLatency(System.nanoTime() - startTime);
       ctx.write(response, ctx.voidPromise());
     } catch (RuntimeException ex) {
-      metricsCollector.recordServiceLatency(Duration.ofNanos(System.nanoTime() - startTime));
+      metricsCollector.recordServiceLatency(System.nanoTime() - startTime);
       exceptionCaught(ctx, ex);
     } finally {
       request.recycle();
@@ -54,7 +48,7 @@ public class SyncRequestHandler extends ChannelInboundHandlerAdapter
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
   {
-    HandlerUtil.logException(logger, cause);
+    HandlerUtil.logException(cause);
     ctx.write(HandlerUtil.createServerError());
   }
 }

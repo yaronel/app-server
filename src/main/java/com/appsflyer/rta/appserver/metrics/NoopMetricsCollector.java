@@ -1,7 +1,5 @@
 package com.appsflyer.rta.appserver.metrics;
 
-import java.time.Duration;
-
 class NoopMetricsCollector implements MetricsCollector
 {
   @Override
@@ -20,7 +18,7 @@ class NoopMetricsCollector implements MetricsCollector
   }
   
   @Override
-  public void recordSendLatency(Duration duration)
+  public void recordSendLatency(long nanos)
   {
   }
   
@@ -30,17 +28,17 @@ class NoopMetricsCollector implements MetricsCollector
   }
   
   @Override
-  public void recordReceiveLatency(Duration duration)
+  public void recordReceiveLatency(long nanos)
   {
   }
   
   @Override
-  public void recordResponseLatency(Duration duration)
+  public void recordResponseLatency(long nanos)
   {
   }
   
   @Override
-  public void recordServiceLatency(Duration duration)
+  public void recordServiceLatency(long nanos)
   {
   }
   

@@ -5,8 +5,6 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
-import java.time.Duration;
-
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 public class MetricsCollectorImpl implements MetricsCollector
@@ -58,9 +56,9 @@ public class MetricsCollectorImpl implements MetricsCollector
   }
   
   @Override
-  public void recordSendLatency(Duration duration)
+  public void recordSendLatency(long nanos)
   {
-    sendLatency.update(duration.toNanos(), NANOSECONDS);
+    sendLatency.update(nanos, NANOSECONDS);
   }
   
   @Override
@@ -76,21 +74,21 @@ public class MetricsCollectorImpl implements MetricsCollector
   }
   
   @Override
-  public void recordReceiveLatency(Duration duration)
+  public void recordReceiveLatency(long nanos)
   {
-    receiveLatency.update(duration.toNanos(), NANOSECONDS);
+    receiveLatency.update(nanos, NANOSECONDS);
   }
   
   @Override
-  public void recordResponseLatency(Duration duration)
+  public void recordResponseLatency(long nanos)
   {
-    responseLatency.update(duration.toNanos(), NANOSECONDS);
+    responseLatency.update(nanos, NANOSECONDS);
   }
   
   @Override
-  public void recordServiceLatency(Duration duration)
+  public void recordServiceLatency(long nanos)
   {
-    serviceLatency.update(duration.toNanos(), NANOSECONDS);
+    serviceLatency.update(nanos, NANOSECONDS);
   }
   
 }
