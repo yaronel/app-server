@@ -16,8 +16,6 @@ import io.netty.util.concurrent.EventExecutorGroup;
 
 public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
 {
-  private final ServerConfig config;
-  private final ChannelInboundHandlerAdapter inboundHandler;
   static final String SERVER_CODEC = "codec";
   static final String METRICS_HANDLER = "metrics";
   static final String DECOMPRESSOR = "inflate";
@@ -29,10 +27,17 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
   static final String RESPONSE_ENCODER = "full-html-response-encoder";
   static final String APP_HANDLER = "ap-handler";
   
+  private final ServerConfig config;
+  private final ChannelInboundHandlerAdapter inboundHandler;
+  private EventExecutorGroup eventExecutors;
+  
   public HttpChannelInitializer(ServerConfig config)
   {
     this.config = config;
     inboundHandler = RequestHandlerFactory.newInstance(config);
+    if (config.isBlockingIo()) {
+      eventExecutors = createEventExecutorsGroup();
+    }
   }
   
   private EventExecutorGroup createEventExecutorsGroup()
@@ -62,8 +67,8 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
             .addLast(REQUEST_DECODER, FullHtmlRequestDecoder.INSTANCE)
             .addLast(RESPONSE_ENCODER, FullHtmlResponseEncoder.INSTANCE);
   
-    if (config.isBlockingIo()) {
-      pipeline.addLast(createEventExecutorsGroup(), APP_HANDLER, inboundHandler);
+    if (eventExecutors != null) {
+      pipeline.addLast(eventExecutors, APP_HANDLER, inboundHandler);
     }
     else {
       pipeline.addLast(APP_HANDLER, inboundHandler);
