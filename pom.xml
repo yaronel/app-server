@@ -6,7 +6,7 @@
 
     <groupId>com.appsflyer.rta</groupId>
     <artifactId>app-server</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>RTA Application Server</name>
     <description>Http application server built on top of Netty</description>
     <packaging>jar</packaging>
