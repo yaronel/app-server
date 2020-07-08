@@ -21,7 +21,7 @@ public class ServerConfig
   private MetricsCollector metricsCollector;
   private boolean compress;
   private int maxContentLength = 1048576;
-  private String host = "localhost";
+  private String host = "0.0.0.0";
   private HandlerMode mode = BLOCKING;
   private Duration connectTimeout = Duration.ofSeconds(30L);
   private Duration readTimeout = Duration.ofSeconds(10L);

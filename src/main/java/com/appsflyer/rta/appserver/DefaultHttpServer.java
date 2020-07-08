@@ -8,6 +8,7 @@ import io.netty.channel.EventLoopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 public final class DefaultHttpServer implements HttpServer
@@ -47,7 +48,8 @@ public final class DefaultHttpServer implements HttpServer
                    eventLoopCreator.newGroup(config.childGroupConfig()))
             .channel(eventLoopCreator.channelClass())
             .childHandler(new HttpChannelInitializer(config))
-            .bind(config.port())
+            .localAddress(new InetSocketAddress(config.host(), config.port()))
+            .bind()
             .sync()
             .channel();
     
