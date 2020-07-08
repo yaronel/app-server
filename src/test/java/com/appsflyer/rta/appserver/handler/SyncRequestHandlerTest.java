@@ -1,16 +1,15 @@
 package com.appsflyer.rta.appserver.handler;
 
+import com.appsflyer.rta.appserver.HandlerMode;
 import com.appsflyer.rta.appserver.HttpRequest;
 import com.appsflyer.rta.appserver.HttpResponse;
+import com.appsflyer.rta.appserver.ServerConfig;
 import com.appsflyer.rta.appserver.codec.FullHtmlRequestDecoder;
 import com.appsflyer.rta.appserver.codec.FullHtmlResponseEncoder;
 import com.appsflyer.rta.appserver.metrics.MetricsCollector;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.FullHttpResponse;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -23,13 +22,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 @Tag("slow")
 class SyncRequestHandlerTest
 {
+  @SuppressWarnings("StaticVariableMayNotBeInitialized")
+  private static ServerConfig config;
   private EmbeddedChannel channel;
+  
+  @BeforeAll
+  static void beforeAll()
+  {
+    config = mock(ServerConfig.class);
+    when(config.mode()).thenReturn(HandlerMode.NON_BLOCKING);
+    when(config.metricsCollector()).thenReturn(mock(MetricsCollector.class));
+  }
   
   @BeforeEach
   void setUp()
@@ -47,13 +55,15 @@ class SyncRequestHandlerTest
   @Test
   void executesHandlerSynchronously()
   {
+    when(config.requestHandler()).thenReturn(new StubHandler());
+  
     channel.pipeline()
            .addLast(FullHtmlRequestDecoder.INSTANCE)
            .addLast(FullHtmlResponseEncoder.INSTANCE)
-           .addLast(new SyncRequestHandler(new StubHandler(), mock(MetricsCollector.class)));
-    
+           .addLast(RequestHandlerFactory.newInstance(config));
+  
     channel.writeInbound(requestWithContent("Hello"));
-    
+  
     var msg = channel.readOutbound();
     assertThat(msg, instanceOf(FullHttpResponse.class));
     var response = (FullHttpResponse) msg;
@@ -66,16 +76,17 @@ class SyncRequestHandlerTest
   void returnsInternalServerErrorWhenExceptionIsThrown()
   {
     AtomicInteger counter = new AtomicInteger();
-    MetricsCollector metricsCollector = mock(MetricsCollector.class);
+    MetricsCollector metricsCollector = config.metricsCollector();
     doAnswer(invocationOnMock -> counter.incrementAndGet())
         .when(metricsCollector)
         .recordServiceLatency(anyLong());
-    
-    channel.pipeline().addLast(
-        new SyncRequestHandler(exceptionalStubHandler(), metricsCollector));
-    
+  
+    when(config.requestHandler()).thenReturn(exceptionalStubHandler());
+  
+    channel.pipeline().addLast(RequestHandlerFactory.newInstance(config));
+  
     channel.writeInbound(HttpRequest.newInstance(requestWithContent(""), channel));
-    
+  
     var msg = channel.readOutbound();
     assertThat(msg, instanceOf(HttpResponse.class));
     var response = (HttpResponse) msg;

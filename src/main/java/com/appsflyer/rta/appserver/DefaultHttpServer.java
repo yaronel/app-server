@@ -8,8 +8,6 @@ import io.netty.channel.EventLoopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 public final class DefaultHttpServer implements HttpServer
@@ -34,9 +32,8 @@ public final class DefaultHttpServer implements HttpServer
   }
   
   @Override
-  public void start() throws InterruptedException, UnknownHostException
+  public void start() throws InterruptedException
   {
-    InetAddress host = InetAddress.getByName(config.host());
     NativeEventLoop eventLoopCreator = NativeEventLoopFactory.createInstance();
     serverChannel =
         bootstrap
@@ -50,7 +47,7 @@ public final class DefaultHttpServer implements HttpServer
                    eventLoopCreator.newGroup(config.childGroupConfig()))
             .channel(eventLoopCreator.channelClass())
             .childHandler(new HttpChannelInitializer(config))
-            .bind(host, config.port())
+            .bind(config.port())
             .sync()
             .channel();
     
