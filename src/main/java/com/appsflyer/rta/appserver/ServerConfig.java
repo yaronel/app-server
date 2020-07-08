@@ -21,7 +21,6 @@ public class ServerConfig
   private MetricsCollector metricsCollector;
   private boolean compress;
   private int maxContentLength = 1048576;
-  private String host = "0.0.0.0";
   private HandlerMode mode = BLOCKING;
   private Duration connectTimeout = Duration.ofSeconds(30L);
   private Duration readTimeout = Duration.ofSeconds(10L);
@@ -34,11 +33,6 @@ public class ServerConfig
   public int port()
   {
     return port;
-  }
-  
-  public String host()
-  {
-    return host;
   }
   
   public boolean isCompress()
@@ -111,13 +105,6 @@ public class ServerConfig
     public Builder setPort(int port)
     {
       instance.port = port;
-      return this;
-    }
-    
-    public Builder setHost(String host)
-    {
-      Objects.requireNonNull(host);
-      instance.host = host;
       return this;
     }
     

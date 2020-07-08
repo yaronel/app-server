@@ -48,8 +48,7 @@ public final class DefaultHttpServer implements HttpServer
                    eventLoopCreator.newGroup(config.childGroupConfig()))
             .channel(eventLoopCreator.channelClass())
             .childHandler(new HttpChannelInitializer(config))
-            .localAddress(new InetSocketAddress(config.host(), config.port()))
-            .bind()
+            .bind(config.port())
             .sync()
             .channel();
     
@@ -99,9 +98,7 @@ public final class DefaultHttpServer implements HttpServer
     EventLoopGroup group = bootstrap.config().group();
     if (!group.isShuttingDown() && !group.isShutdown()) {
       if (group.shutdownGracefully().awaitUninterruptibly(5L, TimeUnit.SECONDS)) {
-        if (group.isTerminated()) {
-          logger.info("Server is down");
-        }
+        logger.info("Server is down");
       }
     }
   }
