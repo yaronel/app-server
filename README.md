@@ -4,3 +4,5 @@
 [![coverage report](https://gitlab.appsflyer.com/rta/app-server/badges/master/coverage.svg)](https://gitlab.appsflyer.com/rta/app-server/commits/master)
 
 An opinionated lightweight HTTP server. Exposes a simple API over [Netty](https://netty.io).
+
+More docs to come.
