@@ -1,6 +1,6 @@
 package com.appsflyer.rta.appserver.handler;
 
-import com.appsflyer.rta.appserver.ExecutorsGroupConfig;
+import com.appsflyer.rta.appserver.EventLoopGroupConfig;
 import com.appsflyer.rta.appserver.HandlerMode;
 import com.appsflyer.rta.appserver.ServerConfig;
 import io.netty.channel.ChannelHandlerContext;
@@ -96,7 +96,7 @@ class HttpChannelInitializerTest
   void createsNewExecutorInBlockingMode()
   {
     when(config.isBlockingIo()).thenReturn(true);
-    when(config.blockingExecutorsConfig()).thenReturn(ExecutorsGroupConfig.defaultConfig());
+    when(config.blockingExecutorsConfig()).thenReturn(EventLoopGroupConfig.defaultConfig());
     new HttpChannelInitializer(config).initChannel(mockServerChannel);
     
     ChannelHandlerContext serverCodecContext = mockServerChannel.pipeline().context(SERVER_CODEC);

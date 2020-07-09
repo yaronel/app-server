@@ -6,10 +6,8 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 
 @SuppressWarnings("MethodReturnAlwaysConstant")
-public class EpollEventLoop implements NativeEventLoop
+public class EpollFactory extends AbstractEventLoopFactory
 {
-  EpollEventLoop() {}
-  
   @Override
   public final EventLoopGroup newGroup(EventExecutorsConfig config)
   {

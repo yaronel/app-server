@@ -8,7 +8,6 @@ import io.netty.channel.EventLoopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 public final class DefaultHttpServer implements HttpServer
@@ -35,7 +34,7 @@ public final class DefaultHttpServer implements HttpServer
   @Override
   public void start() throws InterruptedException
   {
-    NativeEventLoop eventLoopCreator = NativeEventLoopFactory.createInstance();
+    NativeEventLoopFactory eventLoopCreator = AbstractEventLoopFactory.newInstance();
     serverChannel =
         bootstrap
             .option(ChannelOption.SO_BACKLOG, TCP_CONNECTION_QUEUE_SIZE)

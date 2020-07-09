@@ -1,6 +1,6 @@
 package com.appsflyer.rta.appserver.handler;
 
-import com.appsflyer.rta.appserver.EventExecutorsConfig;
+import com.appsflyer.rta.appserver.AbstractEventLoopFactory;
 import com.appsflyer.rta.appserver.ServerConfig;
 import com.appsflyer.rta.appserver.codec.FullHtmlRequestDecoder;
 import com.appsflyer.rta.appserver.codec.FullHtmlResponseEncoder;
@@ -10,8 +10,6 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.timeout.WriteTimeoutHandler;
-import io.netty.util.concurrent.DefaultEventExecutorGroup;
-import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.EventExecutorGroup;
 
 public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
@@ -36,16 +34,11 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
     this.config = config;
     inboundHandler = RequestHandlerFactory.newInstance(config);
     if (config.isBlockingIo()) {
-      eventExecutors = createEventExecutorsGroup();
+      eventExecutors =
+          AbstractEventLoopFactory
+              .newInstance()
+              .newGroup(config.blockingExecutorsConfig());
     }
-  }
-  
-  private EventExecutorGroup createEventExecutorsGroup()
-  {
-    EventExecutorsConfig executorsConfig = config.blockingExecutorsConfig();
-    return new DefaultEventExecutorGroup(
-        executorsConfig.threadCount(),
-        new DefaultThreadFactory(executorsConfig.name()));
   }
   
   @Override
@@ -54,19 +47,19 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
     ChannelPipeline pipeline = ch.pipeline();
     pipeline.addLast(SERVER_CODEC, new HttpServerCodec())
             .addLast(METRICS_HANDLER, new HttpServerMetricsHandler(config.metricsCollector()));
-  
+    
     if (config.isCompress()) {
       pipeline.addLast(DECOMPRESSOR, new HttpContentDecompressor())
               .addLast(COMPRESSOR, new HttpContentCompressor());
     }
-  
+    
     pipeline.addLast(KEEP_ALIVE_HANDLER, new HttpServerKeepAliveHandler())
             .addLast(AGGREGATOR_HANDLER, new HttpObjectAggregator(config.maxContentLength()))
             .addLast(WRITE_TIMEOUT_HANDLER, new WriteTimeoutHandler(
                 (int) config.writeTimeout().getSeconds()))
             .addLast(REQUEST_DECODER, FullHtmlRequestDecoder.INSTANCE)
             .addLast(RESPONSE_ENCODER, FullHtmlResponseEncoder.INSTANCE);
-  
+    
     if (eventExecutors != null) {
       pipeline.addLast(eventExecutors, APP_HANDLER, inboundHandler);
     }

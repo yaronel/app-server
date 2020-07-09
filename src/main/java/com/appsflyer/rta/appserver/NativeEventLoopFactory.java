@@ -1,22 +1,20 @@
 package com.appsflyer.rta.appserver;
 
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.kqueue.KQueue;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ServerChannel;
+import io.netty.util.concurrent.DefaultThreadFactory;
 
-final class NativeEventLoopFactory
+import java.util.concurrent.ThreadFactory;
+
+@SuppressWarnings("MethodReturnAlwaysConstant")
+public interface NativeEventLoopFactory
 {
-  private NativeEventLoopFactory() {}
+  EventLoopGroup newGroup(EventExecutorsConfig config);
   
-  static NativeEventLoop createInstance()
+  Class<? extends ServerChannel> channelClass();
+  
+  default ThreadFactory newThreadFactory(EventExecutorsConfig config)
   {
-    if (Epoll.isAvailable()) {
-      return new EpollEventLoop();
-    }
-    else if (KQueue.isAvailable()) {
-      return new KQueueFactory();
-    }
-    else {
-      return new NioFactory();
-    }
+    return new DefaultThreadFactory(config.name(), true);
   }
 }

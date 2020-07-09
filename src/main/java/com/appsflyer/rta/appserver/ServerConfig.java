@@ -189,7 +189,7 @@ public class ServerConfig
     private void assertValidState()
     {
       if (instance.isBlockingIo() && instance.blockingExecutorsConfig == null) {
-        instance.blockingExecutorsConfig = ExecutorsGroupConfig.defaultConfig();
+        instance.blockingExecutorsConfig = EventLoopGroupConfig.defaultConfig();
       }
       if (instance.childGroupConfig == null) {
         throw new IllegalStateException("Missing child event loop group configuration");

@@ -6,10 +6,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 @SuppressWarnings("MethodReturnAlwaysConstant")
-public class NioFactory implements NativeEventLoop
+public class NioFactory extends AbstractEventLoopFactory
 {
-  NioFactory() {}
-  
   @Override
   public final EventLoopGroup newGroup(EventExecutorsConfig config)
   {
