@@ -1,4 +1,4 @@
-package com.appsflyer.rta.appserver;
+package com.appsflyer.rta.appserver.executor;
 
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ServerChannel;
@@ -9,7 +9,7 @@ import io.netty.channel.epoll.EpollServerSocketChannel;
 public class EpollFactory extends AbstractEventLoopFactory
 {
   @Override
-  public final EventLoopGroup newGroup(EventExecutorsConfig config)
+  public final EventLoopGroup newGroup(ExecutorConfig config)
   {
     return new EpollEventLoopGroup(config.threadCount(), newThreadFactory(config));
   }

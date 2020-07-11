@@ -1,9 +1,9 @@
 package com.appsflyer.rta.appserver.handler;
 
-import com.appsflyer.rta.appserver.AbstractEventLoopFactory;
 import com.appsflyer.rta.appserver.ServerConfig;
 import com.appsflyer.rta.appserver.codec.FullHtmlRequestDecoder;
 import com.appsflyer.rta.appserver.codec.FullHtmlResponseEncoder;
+import com.appsflyer.rta.appserver.executor.DefaultExecutor;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -23,7 +23,7 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
   static final String WRITE_TIMEOUT_HANDLER = "write-timeout";
   static final String REQUEST_DECODER = "full-html-request-decoder";
   static final String RESPONSE_ENCODER = "full-html-response-encoder";
-  static final String APP_HANDLER = "ap-handler";
+  static final String APP_HANDLER = "app-handler";
   
   private final ServerConfig config;
   private final ChannelInboundHandlerAdapter inboundHandler;
@@ -35,9 +35,7 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
     inboundHandler = RequestHandlerFactory.newInstance(config);
     if (config.isBlockingIo()) {
       eventExecutors =
-          AbstractEventLoopFactory
-              .newInstance()
-              .newGroup(config.blockingExecutorsConfig());
+          DefaultExecutor.newEventExecutorGroup(config.blockingExecutorsConfig());
     }
   }
   

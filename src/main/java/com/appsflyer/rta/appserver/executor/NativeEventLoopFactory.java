@@ -1,20 +1,19 @@
-package com.appsflyer.rta.appserver;
+package com.appsflyer.rta.appserver.executor;
 
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ServerChannel;
-import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.concurrent.ThreadFactory;
 
 @SuppressWarnings("MethodReturnAlwaysConstant")
 public interface NativeEventLoopFactory
 {
-  EventLoopGroup newGroup(EventExecutorsConfig config);
+  EventLoopGroup newGroup(ExecutorConfig config);
   
   Class<? extends ServerChannel> channelClass();
   
-  default ThreadFactory newThreadFactory(EventExecutorsConfig config)
+  default ThreadFactory newThreadFactory(ExecutorConfig config)
   {
-    return new DefaultThreadFactory(config.name(), true);
+    return DefaultExecutor.newThreadFactory(config);
   }
 }

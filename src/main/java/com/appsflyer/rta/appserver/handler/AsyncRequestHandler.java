@@ -2,7 +2,6 @@ package com.appsflyer.rta.appserver.handler;
 
 import com.appsflyer.rta.appserver.HttpRequest;
 import com.appsflyer.rta.appserver.metrics.MetricsCollector;
-import com.appsflyer.rta.appserver.util.HandlerUtil;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

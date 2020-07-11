@@ -1,5 +1,7 @@
 package com.appsflyer.rta.appserver;
 
+import com.appsflyer.rta.appserver.executor.EventExecutorConfig;
+import com.appsflyer.rta.appserver.executor.ExecutorConfig;
 import com.appsflyer.rta.appserver.handler.RequestHandler;
 import com.appsflyer.rta.appserver.metrics.MetricsCollector;
 import com.appsflyer.rta.appserver.metrics.MetricsCollectorFactory;
@@ -15,8 +17,8 @@ public class ServerConfig
 {
   
   private int port;
-  private EventExecutorsConfig blockingExecutorsConfig;
-  private EventExecutorsConfig childGroupConfig;
+  private ExecutorConfig blockingExecutorsConfig;
+  private ExecutorConfig childGroupConfig;
   private RequestHandler requestHandler;
   private MetricsCollector metricsCollector;
   private boolean compress;
@@ -40,12 +42,12 @@ public class ServerConfig
     return compress;
   }
   
-  public EventExecutorsConfig blockingExecutorsConfig()
+  public ExecutorConfig blockingExecutorsConfig()
   {
     return blockingExecutorsConfig;
   }
   
-  public EventExecutorsConfig childGroupConfig()
+  public ExecutorConfig childGroupConfig()
   {
     return childGroupConfig;
   }
@@ -107,27 +109,27 @@ public class ServerConfig
       instance.port = port;
       return this;
     }
-    
+  
     public Builder setCompress(boolean compress)
     {
       instance.compress = compress;
       return this;
     }
-    
-    public Builder setBlockingExecutorsConfig(EventExecutorsConfig executorsConfig)
+  
+    public Builder setBlockingExecutorsConfig(ExecutorConfig executorsConfig)
     {
       Objects.requireNonNull(executorsConfig);
       instance.blockingExecutorsConfig = executorsConfig;
       return this;
     }
-    
-    public Builder setChildGroupConfig(EventExecutorsConfig executorsConfig)
+  
+    public Builder setChildGroupConfig(ExecutorConfig executorsConfig)
     {
       Objects.requireNonNull(executorsConfig);
       instance.childGroupConfig = executorsConfig;
       return this;
     }
-    
+  
     public Builder setConnectTimeout(Duration connectTimeout)
     {
       Objects.requireNonNull(connectTimeout);
@@ -189,7 +191,7 @@ public class ServerConfig
     private void assertValidState()
     {
       if (instance.isBlockingIo() && instance.blockingExecutorsConfig == null) {
-        instance.blockingExecutorsConfig = EventLoopGroupConfig.defaultConfig();
+        instance.blockingExecutorsConfig = EventExecutorConfig.defaultConfig();
       }
       if (instance.childGroupConfig == null) {
         throw new IllegalStateException("Missing child event loop group configuration");
