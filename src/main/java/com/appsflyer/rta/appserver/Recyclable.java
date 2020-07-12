@@ -14,6 +14,7 @@ package com.appsflyer.rta.appserver;
  */
 @SuppressWarnings("SameReturnValue")
 @FunctionalInterface
+public
 interface Recyclable
 {
   boolean recycle();

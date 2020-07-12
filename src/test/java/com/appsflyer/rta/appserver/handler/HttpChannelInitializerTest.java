@@ -57,6 +57,7 @@ class HttpChannelInitializerTest
   
   private static void assertDefaultHandlersExist(ChannelPipeline pipeline)
   {
+    assertNotNull(pipeline.get(IDLE_STATE_HANDLER));
     assertNotNull(pipeline.get(SERVER_CODEC));
     assertNotNull(pipeline.get(METRICS_HANDLER));
     assertNotNull(pipeline.get(KEEP_ALIVE_HANDLER));

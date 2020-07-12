@@ -1,7 +1,9 @@
 package com.appsflyer.rta.appserver.handler;
 
+import com.appsflyer.rta.appserver.HandlerMode;
 import com.appsflyer.rta.appserver.HttpRequest;
 import com.appsflyer.rta.appserver.HttpResponse;
+import com.appsflyer.rta.appserver.ServerConfig;
 import com.appsflyer.rta.appserver.codec.FullHtmlRequestDecoder;
 import com.appsflyer.rta.appserver.codec.FullHtmlResponseEncoder;
 import com.appsflyer.rta.appserver.metrics.MetricsCollector;
@@ -10,10 +12,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -30,11 +29,21 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Tag("slow")
 class AsyncRequestHandlerTest
 {
+  private static ServerConfig config;
   private EmbeddedChannel channel;
+  
+  @BeforeAll
+  static void beforeAll()
+  {
+    config = mock(ServerConfig.class);
+    when(config.mode()).thenReturn(HandlerMode.ASYNC);
+    when(config.metricsCollector()).thenReturn(mock(MetricsCollector.class));
+  }
   
   @BeforeEach
   void setUp()
@@ -55,26 +64,28 @@ class AsyncRequestHandlerTest
      * **** Setup ****
      */
     var latch = new CountDownLatch(1);
-    
+  
     RequestHandler handler = new StubHandler(
         (request) -> HttpResponse.newInstance(
             200,
             (request.asString() + " world!").getBytes(UTF_8),
             Map.of("Content-Type", "text/plain")), latch);
-    
+  
+    when(config.requestHandler()).thenReturn(handler);
+  
     channel.pipeline()
            .addLast(FullHtmlRequestDecoder.INSTANCE)
            .addLast(FullHtmlResponseEncoder.INSTANCE)
-           .addLast(new AsyncRequestHandler(handler, mock(MetricsCollector.class)));
-    
+           .addLast(RequestHandlerFactory.newInstance(config));
+  
     FullHttpRequest request = new DefaultFullHttpRequest(
         HTTP_1_1, POST, "http://localhost", Unpooled.wrappedBuffer("Hello".getBytes(UTF_8)));
-    
+  
     /*
      * **** Execution ****
      */
     channel.writeInbound(request);
-    
+  
     if (!latch.await(1, TimeUnit.SECONDS)) {
       fail("Operation exceeded 1 second.");
     }
@@ -117,7 +128,6 @@ class AsyncRequestHandlerTest
     @Override
     public HttpResponse apply(HttpRequest request)
     {
-      //noinspection ReturnOfNull
       return null;
     }
   }

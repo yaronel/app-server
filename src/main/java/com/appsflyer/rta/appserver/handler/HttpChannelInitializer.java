@@ -9,11 +9,13 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.concurrent.EventExecutorGroup;
 
 public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
 {
+  static final String IDLE_STATE_HANDLER = "idle";
   static final String SERVER_CODEC = "codec";
   static final String METRICS_HANDLER = "metrics";
   static final String DECOMPRESSOR = "inflate";
@@ -43,14 +45,15 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
   protected void initChannel(SocketChannel ch)
   {
     ChannelPipeline pipeline = ch.pipeline();
-    pipeline.addLast(SERVER_CODEC, new HttpServerCodec())
-            .addLast(METRICS_HANDLER, new HttpServerMetricsHandler(config.metricsCollector()));
-    
+    pipeline.addLast(IDLE_STATE_HANDLER, new IdleStateHandler(0, 0, 60))
+            .addLast(SERVER_CODEC, new HttpServerCodec())
+            .addLast(METRICS_HANDLER, new ServerMetricsHandler(config.metricsCollector()));
+  
     if (config.isCompress()) {
       pipeline.addLast(DECOMPRESSOR, new HttpContentDecompressor())
               .addLast(COMPRESSOR, new HttpContentCompressor());
     }
-    
+  
     pipeline.addLast(KEEP_ALIVE_HANDLER, new HttpServerKeepAliveHandler())
             .addLast(AGGREGATOR_HANDLER, new HttpObjectAggregator(config.maxContentLength()))
             .addLast(WRITE_TIMEOUT_HANDLER, new WriteTimeoutHandler(

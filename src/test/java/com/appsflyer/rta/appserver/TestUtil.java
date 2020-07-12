@@ -3,8 +3,7 @@ package com.appsflyer.rta.appserver;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledHeapByteBuf;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.*;
 
 import static io.netty.handler.codec.http.HttpMethod.POST;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -37,4 +36,28 @@ public final class TestUtil
         "http://localhost",
         Unpooled.wrappedBuffer(content.getBytes(UTF_8)));
   }
+  
+  public static DefaultHttpRequest partialRequest()
+  {
+    return new DefaultHttpRequest(HTTP_1_1, POST, "http://localhost");
+  }
+  
+  public static LastHttpContent lastHttpContent(String content)
+  {
+    return new DefaultLastHttpContent(Unpooled.wrappedBuffer(content.getBytes(UTF_8)));
+  }
+  
+  public static FullHttpResponse responseWithContent(String content)
+  {
+    return new DefaultFullHttpResponse(
+        HTTP_1_1,
+        HttpResponseStatus.OK,
+        Unpooled.wrappedBuffer(content.getBytes(UTF_8)));
+  }
+  
+  public static DefaultHttpResponse partialResponse()
+  {
+    return new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
+  }
+  
 }

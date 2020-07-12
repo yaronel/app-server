@@ -3,9 +3,11 @@ package com.appsflyer.rta.appserver.handler;
 import com.appsflyer.rta.appserver.HttpRequest;
 import com.appsflyer.rta.appserver.HttpResponse;
 import com.appsflyer.rta.appserver.metrics.MetricsCollector;
+import com.appsflyer.rta.appserver.metrics.Stopper;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.timeout.IdleStateEvent;
 
 @SuppressWarnings("WeakerAccess")
 @ChannelHandler.Sharable
@@ -24,16 +26,17 @@ public class SyncRequestHandler extends ChannelInboundHandlerAdapter
   public void channelRead(ChannelHandlerContext ctx, Object msg)
   {
     HttpRequest request = (HttpRequest) msg;
-    var startTime = System.nanoTime();
+    Stopper timer = Stopper.newStartedInstance();
     try {
       HttpResponse response = requestHandler.apply(request);
-      metricsCollector.recordServiceLatency(System.nanoTime() - startTime);
+      metricsCollector.recordServiceLatency(timer.stop());
       ctx.write(response, ctx.voidPromise());
     } catch (RuntimeException ex) {
-      metricsCollector.recordServiceLatency(System.nanoTime() - startTime);
+      metricsCollector.recordServiceLatency(timer.stop());
       exceptionCaught(ctx, ex);
     } finally {
       request.recycle();
+      timer.recycle();
     }
   }
   
@@ -49,5 +52,14 @@ public class SyncRequestHandler extends ChannelInboundHandlerAdapter
   {
     HandlerUtil.logException(cause);
     ctx.write(HandlerUtil.createServerError());
+  }
+  
+  
+  @Override
+  public void userEventTriggered(ChannelHandlerContext ctx, Object evt)
+  {
+    if (evt instanceof IdleStateEvent) {
+      ctx.close();
+    }
   }
 }

@@ -1,6 +1,9 @@
 package com.appsflyer.rta.appserver.handler;
 
+import com.appsflyer.rta.appserver.Recyclable;
 import com.appsflyer.rta.appserver.metrics.MetricsCollector;
+import com.appsflyer.rta.appserver.metrics.Stopper;
+import com.appsflyer.rta.appserver.metrics.Timer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufHolder;
 import io.netty.channel.ChannelDuplexHandler;
@@ -12,17 +15,25 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.concurrent.Future;
 
-public class HttpServerMetricsHandler extends ChannelDuplexHandler
+public class ServerMetricsHandler extends ChannelDuplexHandler
 {
+  private final MetricsCollector metricsCollector;
+  private final Timer receiveLatency;
+  private final Timer sendLatency;
   private long bytesReceived;
   private long bytesSent;
-  private long receiveLatency;
-  private long sendLatency;
-  private final MetricsCollector metricsCollector;
   
-  HttpServerMetricsHandler(MetricsCollector metricsCollector)
+  
+  ServerMetricsHandler(MetricsCollector metricsCollector, Timer receiveLatency, Timer sendLatency)
   {
     this.metricsCollector = metricsCollector;
+    this.receiveLatency = receiveLatency;
+    this.sendLatency = sendLatency;
+  }
+  
+  ServerMetricsHandler(MetricsCollector metricsCollector)
+  {
+    this(metricsCollector, Stopper.newInstance(), Stopper.newInstance());
   }
   
   @Override
@@ -33,7 +44,7 @@ public class HttpServerMetricsHandler extends ChannelDuplexHandler
         ctx.write(msg, promise);
         return;
       }
-      sendLatency = System.nanoTime();
+      sendLatency.start();
     }
     
     if (msg instanceof ByteBufHolder) {
@@ -50,11 +61,25 @@ public class HttpServerMetricsHandler extends ChannelDuplexHandler
     ctx.write(msg, promise);
   }
   
+  private void sumMetrics(Future<? super Void> future)
+  {
+    metricsCollector.recordSendLatency(sendLatency.stop());
+    if (receiveLatency.elapsed() == 0) {
+      metricsCollector.recordResponseLatency(sendLatency.elapsed());
+    }
+    else {
+      metricsCollector.recordResponseLatency(receiveLatency.stop());
+    }
+    metricsCollector.markSentBytes(bytesSent);
+    metricsCollector.markSuccessHit();
+    bytesSent = 0;
+  }
+  
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg)
   {
     if (msg instanceof HttpRequest) {
-      receiveLatency = System.nanoTime();
+      receiveLatency.start();
     }
     
     if (msg instanceof ByteBufHolder) {
@@ -65,7 +90,7 @@ public class HttpServerMetricsHandler extends ChannelDuplexHandler
     }
     
     if (msg instanceof LastHttpContent) {
-      metricsCollector.recordReceiveLatency(System.nanoTime() - receiveLatency);
+      metricsCollector.recordReceiveLatency(receiveLatency.stop());
       metricsCollector.markBytesReceived(bytesReceived);
       metricsCollector.markHit();
       bytesReceived = 0;
@@ -81,17 +106,10 @@ public class HttpServerMetricsHandler extends ChannelDuplexHandler
     ctx.close();
   }
   
-  private void sumMetrics(Future<? super Void> future)
+  @Override
+  public void handlerRemoved(ChannelHandlerContext ctx)
   {
-    metricsCollector.recordSendLatency(System.nanoTime() - sendLatency);
-    if (receiveLatency == 0) {
-      metricsCollector.recordResponseLatency(System.nanoTime() - sendLatency);
-    }
-    else {
-      metricsCollector.recordResponseLatency(System.nanoTime() - receiveLatency);
-    }
-    metricsCollector.markSentBytes(bytesSent);
-    metricsCollector.markSuccessHit();
-    bytesSent = 0;
+    ((Recyclable) receiveLatency).recycle();
+    ((Recyclable) sendLatency).recycle();
   }
 }
