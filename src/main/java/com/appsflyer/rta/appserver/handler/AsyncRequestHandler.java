@@ -32,7 +32,7 @@ public class AsyncRequestHandler extends ChannelInboundHandlerAdapter
         .handle((response, throwable) -> {
           metricsCollector.recordServiceLatency(timer.stop());
           if (throwable == null) {
-            ctx.write(response, ctx.voidPromise());
+            ctx.writeAndFlush(response, ctx.voidPromise());
           }
           else {
             exceptionCaught(ctx, throwable);
@@ -45,17 +45,10 @@ public class AsyncRequestHandler extends ChannelInboundHandlerAdapter
   }
   
   @Override
-  public void channelReadComplete(ChannelHandlerContext ctx)
-  {
-    ctx.flush();
-    ctx.fireChannelReadComplete();
-  }
-  
-  @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
   {
     HandlerUtil.logException(cause);
-    ctx.write(HandlerUtil.createServerError(), ctx.voidPromise());
+    ctx.writeAndFlush(HandlerUtil.createServerError(), ctx.voidPromise());
   }
   
   @Override
