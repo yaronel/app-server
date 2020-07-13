@@ -47,11 +47,11 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
     ChannelPipeline pipeline = ch.pipeline();
     pipeline.addLast(IDLE_STATE_HANDLER, new IdleStateHandler(0, 0, 60))
             .addLast(SERVER_CODEC, new HttpServerCodec())
-            .addLast(METRICS_HANDLER, new ServerMetricsHandler(config.metricsCollector()));
+            .addLast(METRICS_HANDLER, new ServerMetricsHandler(config.metricsCollector()))
+            .addLast(DECOMPRESSOR, new HttpContentDecompressor());
   
     if (config.isCompress()) {
-      pipeline.addLast(DECOMPRESSOR, new HttpContentDecompressor())
-              .addLast(COMPRESSOR, new HttpContentCompressor());
+      pipeline.addLast(COMPRESSOR, new HttpContentCompressor());
     }
   
     pipeline.addLast(KEEP_ALIVE_HANDLER, new HttpServerKeepAliveHandler())

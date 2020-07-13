@@ -51,7 +51,6 @@ class HttpChannelInitializerTest
     
     assertDefaultHandlersExist(mockServerChannel.pipeline());
     
-    assertNull(mockServerChannel.pipeline().get(DECOMPRESSOR));
     assertNull(mockServerChannel.pipeline().get(COMPRESSOR));
   }
   
@@ -60,6 +59,7 @@ class HttpChannelInitializerTest
     assertNotNull(pipeline.get(IDLE_STATE_HANDLER));
     assertNotNull(pipeline.get(SERVER_CODEC));
     assertNotNull(pipeline.get(METRICS_HANDLER));
+    assertNotNull(pipeline.get(DECOMPRESSOR));
     assertNotNull(pipeline.get(KEEP_ALIVE_HANDLER));
     assertNotNull(pipeline.get(AGGREGATOR_HANDLER));
     assertNotNull(pipeline.get(WRITE_TIMEOUT_HANDLER));
@@ -76,7 +76,6 @@ class HttpChannelInitializerTest
     
     assertDefaultHandlersExist(mockServerChannel.pipeline());
     
-    assertNotNull(mockServerChannel.pipeline().get(DECOMPRESSOR));
     assertNotNull(mockServerChannel.pipeline().get(COMPRESSOR));
   }
   
