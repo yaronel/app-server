@@ -120,6 +120,6 @@ public final class DefaultHttpServer implements HttpServer
   
   private static boolean isShutdown(EventExecutorGroup group)
   {
-    return !group.isShuttingDown() && !group.isShutdown();
+    return group.isShuttingDown() || group.isShutdown();
   }
 }
