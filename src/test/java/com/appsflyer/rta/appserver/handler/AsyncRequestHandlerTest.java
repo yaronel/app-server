@@ -6,11 +6,8 @@ import com.appsflyer.rta.appserver.HttpResponse;
 import com.appsflyer.rta.appserver.ServerConfig;
 import com.appsflyer.rta.appserver.codec.FullHtmlRequestDecoder;
 import com.appsflyer.rta.appserver.codec.FullHtmlResponseEncoder;
-import com.appsflyer.rta.appserver.metrics.MetricsCollector;
-import io.netty.buffer.Unpooled;
+import com.appsflyer.rta.appserver.metrics.MetricsCollectorFactory;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import org.junit.jupiter.api.*;
 
@@ -20,9 +17,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import static com.appsflyer.rta.appserver.TestUtil.requestWithContent;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpMethod.POST;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -42,7 +38,7 @@ class AsyncRequestHandlerTest
   {
     config = mock(ServerConfig.class);
     when(config.mode()).thenReturn(HandlerMode.ASYNC);
-    when(config.metricsCollector()).thenReturn(mock(MetricsCollector.class));
+    when(config.metricsCollector()).thenReturn(MetricsCollectorFactory.NOOP);
   }
   
   @BeforeEach
@@ -78,13 +74,10 @@ class AsyncRequestHandlerTest
            .addLast(FullHtmlResponseEncoder.INSTANCE)
            .addLast(RequestHandlerFactory.newInstance(config));
   
-    FullHttpRequest request = new DefaultFullHttpRequest(
-        HTTP_1_1, POST, "http://localhost", Unpooled.wrappedBuffer("Hello".getBytes(UTF_8)));
-  
     /*
      * **** Execution ****
      */
-    channel.writeInbound(request);
+    channel.writeInbound(requestWithContent("Hello"));
   
     if (!latch.await(1, TimeUnit.SECONDS)) {
       fail("Operation exceeded 1 second.");

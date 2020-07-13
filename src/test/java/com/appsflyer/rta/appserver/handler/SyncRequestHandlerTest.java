@@ -6,14 +6,13 @@ import com.appsflyer.rta.appserver.HttpResponse;
 import com.appsflyer.rta.appserver.ServerConfig;
 import com.appsflyer.rta.appserver.codec.FullHtmlRequestDecoder;
 import com.appsflyer.rta.appserver.codec.FullHtmlResponseEncoder;
-import com.appsflyer.rta.appserver.metrics.MetricsCollector;
+import com.appsflyer.rta.appserver.metrics.MetricsCollectorFactory;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.FullHttpResponse;
 import org.junit.jupiter.api.*;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.appsflyer.rta.appserver.TestUtil.requestWithContent;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -21,8 +20,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Tag("slow")
 class SyncRequestHandlerTest
@@ -36,7 +35,7 @@ class SyncRequestHandlerTest
   {
     config = mock(ServerConfig.class);
     when(config.mode()).thenReturn(HandlerMode.NON_BLOCKING);
-    when(config.metricsCollector()).thenReturn(mock(MetricsCollector.class));
+    when(config.metricsCollector()).thenReturn(MetricsCollectorFactory.NOOP);
   }
   
   @BeforeEach
@@ -75,12 +74,6 @@ class SyncRequestHandlerTest
   @Test
   void returnsInternalServerErrorWhenExceptionIsThrown()
   {
-    AtomicInteger counter = new AtomicInteger();
-    MetricsCollector metricsCollector = config.metricsCollector();
-    doAnswer(invocationOnMock -> counter.incrementAndGet())
-        .when(metricsCollector)
-        .recordServiceLatency(anyLong());
-  
     when(config.requestHandler()).thenReturn(exceptionalStubHandler());
   
     channel.pipeline().addLast(RequestHandlerFactory.newInstance(config));
@@ -93,7 +86,6 @@ class SyncRequestHandlerTest
     assertEquals(500, response.statusCode());
     assertEquals("Internal Server Error", new String(response.content(), UTF_8));
     assertEquals("text/plain", response.headers().get(CONTENT_TYPE.toString()));
-    assertEquals(1, counter.get(), "it should stop the service latency timer");
     
     response.recycle();
   }
