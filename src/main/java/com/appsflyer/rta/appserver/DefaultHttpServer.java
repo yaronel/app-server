@@ -13,8 +13,6 @@ import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.TimeUnit;
-
 public final class DefaultHttpServer implements HttpServer
 {
   private static final Logger logger = LoggerFactory.getLogger(DefaultHttpServer.class);
@@ -24,6 +22,11 @@ public final class DefaultHttpServer implements HttpServer
   private final ServerConfig config;
   private final ServerBootstrap bootstrap;
   private Channel serverChannel;
+  
+  private static boolean isShutdown(EventExecutorGroup group)
+  {
+    return group.isShuttingDown() || group.isShutdown();
+  }
   
   public static HttpServer newInstance(ServerConfig config)
   {
@@ -85,6 +88,7 @@ public final class DefaultHttpServer implements HttpServer
         Thread.currentThread().interrupt();
       } finally {
         shutdownEventLoopGroup();
+        shutdownChildHandlerExecutors();
       }
     }
   }
@@ -98,11 +102,12 @@ public final class DefaultHttpServer implements HttpServer
     if (serverChannel != null) {
       try {
         logger.info("Shutting down server ...");
-        serverChannel.close().await(5L, TimeUnit.SECONDS);
+        serverChannel.close().await();
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
       } finally {
         shutdownEventLoopGroup();
+        shutdownChildHandlerExecutors();
       }
     }
   }
@@ -113,13 +118,19 @@ public final class DefaultHttpServer implements HttpServer
     if (isShutdown(group)) {
       return;
     }
-    if (group.shutdownGracefully().awaitUninterruptibly(5L, TimeUnit.SECONDS)) {
+  
+    try {
+      group.shutdownGracefully().await();
       logger.info("Server is down");
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
     }
   }
   
-  private static boolean isShutdown(EventExecutorGroup group)
+  
+  private void shutdownChildHandlerExecutors()
   {
-    return group.isShuttingDown() || group.isShutdown();
+    var childHandler = (HttpChannelInitializer) bootstrap.config().childHandler();
+    childHandler.shutdownExecutors();
   }
 }

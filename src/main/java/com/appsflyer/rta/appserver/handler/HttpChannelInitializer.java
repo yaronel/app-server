@@ -60,12 +60,23 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
                 (int) config.writeTimeout().getSeconds()))
             .addLast(REQUEST_DECODER, FullHtmlRequestDecoder.INSTANCE)
             .addLast(RESPONSE_ENCODER, FullHtmlResponseEncoder.INSTANCE);
-    
+  
     if (eventExecutors != null) {
       pipeline.addLast(eventExecutors, APP_HANDLER, inboundHandler);
     }
     else {
       pipeline.addLast(APP_HANDLER, inboundHandler);
+    }
+  }
+  
+  public void shutdownExecutors()
+  {
+    if (eventExecutors != null) {
+      try {
+        eventExecutors.shutdownGracefully().sync();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
     }
   }
 }
