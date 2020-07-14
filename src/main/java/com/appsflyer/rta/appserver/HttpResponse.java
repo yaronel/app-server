@@ -3,6 +3,7 @@ package com.appsflyer.rta.appserver;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.Recycler;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -108,6 +109,32 @@ public final class HttpResponse implements Recyclable
   public HttpVersion protocol()
   {
     return protocol;
+  }
+  
+  @Override
+  public boolean equals(Object o)
+  {
+    if (this == o) { return true; }
+    if (o == null || getClass() != o.getClass()) { return false; }
+    
+    HttpResponse that = (HttpResponse) o;
+    
+    if (statusCode != that.statusCode) { return false; }
+    if (!Arrays.equals(content, that.content)) { return false; }
+    if (!Objects.equals(headers, that.headers)) {
+      return false;
+    }
+    return protocol.equals(that.protocol);
+  }
+  
+  @Override
+  public int hashCode()
+  {
+    int result = statusCode;
+    result = 31 * result + Arrays.hashCode(content);
+    result = 31 * result + (headers != null ? headers.hashCode() : 0);
+    result = 31 * result + protocol.hashCode();
+    return result;
   }
   
   @Override
