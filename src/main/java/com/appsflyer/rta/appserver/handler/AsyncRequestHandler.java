@@ -1,12 +1,15 @@
 package com.appsflyer.rta.appserver.handler;
 
 import com.appsflyer.rta.appserver.HttpRequest;
+import com.appsflyer.rta.appserver.HttpResponse;
 import com.appsflyer.rta.appserver.metrics.MetricsCollector;
 import com.appsflyer.rta.appserver.metrics.Stopper;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleStateEvent;
+
+import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("WeakerAccess")
 @ChannelHandler.Sharable
@@ -26,9 +29,10 @@ public class AsyncRequestHandler extends ChannelInboundHandlerAdapter
   {
     HttpRequest request = (HttpRequest) msg;
     Stopper timer = Stopper.newStartedInstance();
+  
+    // Slightly long lambda is unavoidable here to maintain references in scope
     //noinspection OverlyLongLambda
-    requestHandler
-        .applyAsync(request)
+    exec(request)
         .handle((response, throwable) -> {
           metricsCollector.recordServiceLatency(timer.stop());
           if (throwable == null) {
@@ -42,6 +46,15 @@ public class AsyncRequestHandler extends ChannelInboundHandlerAdapter
           //noinspection ReturnOfNull
           return null;
         });
+  }
+  
+  private CompletableFuture<HttpResponse> exec(HttpRequest request)
+  {
+    try {
+      return requestHandler.applyAsync(request);
+    } catch (RuntimeException ex) {
+      return CompletableFuture.failedFuture(ex);
+    }
   }
   
   @Override
