@@ -1,6 +1,6 @@
 package com.appsflyer.rta.appserver.handler;
 
-import com.appsflyer.rta.appserver.HandlerMode;
+import com.appsflyer.rta.appserver.ExecutionMode;
 import com.appsflyer.rta.appserver.HttpRequest;
 import com.appsflyer.rta.appserver.HttpResponse;
 import com.appsflyer.rta.appserver.ServerConfig;
@@ -34,7 +34,7 @@ class SyncRequestHandlerTest
   static void beforeAll()
   {
     config = mock(ServerConfig.class);
-    when(config.mode()).thenReturn(HandlerMode.NON_BLOCKING);
+    when(config.mode()).thenReturn(ExecutionMode.SYNC);
     when(config.metricsCollector()).thenReturn(MetricsCollectorFactory.NOOP);
   }
   
@@ -90,7 +90,7 @@ class SyncRequestHandlerTest
     response.recycle();
   }
   
-  private static RequestHandler exceptionalStubHandler()
+  private static RequestHandler<HttpRequest, HttpResponse> exceptionalStubHandler()
   {
     return new StubHandler()
     {
@@ -102,7 +102,7 @@ class SyncRequestHandlerTest
     };
   }
   
-  static class StubHandler implements RequestHandler
+  static class StubHandler implements RequestHandler<HttpRequest, HttpResponse>
   {
     
     @Override

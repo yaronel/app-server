@@ -9,7 +9,8 @@ import com.appsflyer.rta.appserver.metrics.MetricsCollectorFactory;
 import java.time.Duration;
 import java.util.Objects;
 
-import static com.appsflyer.rta.appserver.HandlerMode.BLOCKING;
+import static com.appsflyer.rta.appserver.ExecutionMode.ASYNC;
+import static com.appsflyer.rta.appserver.ExecutionMode.SYNC;
 
 @SuppressWarnings({"ClassWithTooManyFields",
     "ClassWithOnlyPrivateConstructors", "WeakerAccess"})
@@ -17,13 +18,13 @@ public class ServerConfig
 {
   
   private int port;
-  private ExecutorConfig blockingExecutorsConfig;
+  private ExecutorConfig asyncExecutorsConfig;
   private ExecutorConfig childGroupConfig;
-  private RequestHandler requestHandler;
+  private RequestHandler<HttpRequest, HttpResponse> requestHandler;
   private MetricsCollector metricsCollector;
   private boolean compress;
   private int maxContentLength = 1048576;
-  private HandlerMode mode = BLOCKING;
+  private ExecutionMode mode = SYNC;
   private Duration connectTimeout = Duration.ofSeconds(30L);
   private Duration readTimeout = Duration.ofSeconds(10L);
   private Duration writeTimeout = Duration.ofSeconds(10L);
@@ -42,9 +43,9 @@ public class ServerConfig
     return compress;
   }
   
-  public ExecutorConfig blockingExecutorsConfig()
+  public ExecutorConfig asyncExecutorsConfig()
   {
-    return blockingExecutorsConfig;
+    return asyncExecutorsConfig;
   }
   
   public ExecutorConfig childGroupConfig()
@@ -72,19 +73,19 @@ public class ServerConfig
     return metricsCollector;
   }
   
-  public HandlerMode mode()
+  public ExecutionMode mode()
   {
     return mode;
   }
   
-  public RequestHandler requestHandler()
+  public RequestHandler<HttpRequest, HttpResponse> requestHandler()
   {
     return requestHandler;
   }
   
-  public boolean isBlockingIo()
+  public boolean isAsyncHandler()
   {
-    return mode == BLOCKING;
+    return mode == ASYNC;
   }
   
   public int maxContentLength()
@@ -116,10 +117,10 @@ public class ServerConfig
       return this;
     }
   
-    public Builder setBlockingExecutorsConfig(ExecutorConfig executorsConfig)
+    public Builder setAsyncExecutorsConfig(ExecutorConfig executorsConfig)
     {
       Objects.requireNonNull(executorsConfig);
-      instance.blockingExecutorsConfig = executorsConfig;
+      instance.asyncExecutorsConfig = executorsConfig;
       return this;
     }
   
@@ -143,21 +144,21 @@ public class ServerConfig
       instance.readTimeout = readTimeout;
       return this;
     }
-    
+  
     public Builder setWriteTimeout(Duration writeTimeout)
     {
       Objects.requireNonNull(writeTimeout);
       instance.writeTimeout = writeTimeout;
       return this;
     }
-    
-    public Builder setMode(HandlerMode mode)
+  
+    public Builder setMode(ExecutionMode mode)
     {
       Objects.requireNonNull(mode);
       instance.mode = mode;
       return this;
     }
-    
+  
     public Builder setMaxContentLength(int length)
     {
       if (length <= 0) {
@@ -166,14 +167,15 @@ public class ServerConfig
       instance.maxContentLength = length;
       return this;
     }
-    
-    public Builder setRequestHandler(RequestHandler requestHandler)
+  
+    public Builder setRequestHandler(
+        RequestHandler<HttpRequest, HttpResponse> requestHandler)
     {
       Objects.requireNonNull(requestHandler);
       instance.requestHandler = requestHandler;
       return this;
     }
-    
+  
     public Builder setMetricsCollector(MetricsCollector metricsCollector)
     {
       instance.metricsCollector = metricsCollector;
@@ -190,8 +192,8 @@ public class ServerConfig
     
     private void assertValidState()
     {
-      if (instance.isBlockingIo() && instance.blockingExecutorsConfig == null) {
-        instance.blockingExecutorsConfig = EventExecutorConfig.defaultConfig();
+      if (instance.isAsyncHandler() && instance.asyncExecutorsConfig == null) {
+        instance.asyncExecutorsConfig = EventExecutorConfig.defaultConfig();
       }
       if (instance.childGroupConfig == null) {
         throw new IllegalStateException("Missing child event loop group configuration");

@@ -1,6 +1,6 @@
 package com.appsflyer.rta.appserver.handler;
 
-import com.appsflyer.rta.appserver.HandlerMode;
+import com.appsflyer.rta.appserver.ExecutionMode;
 import com.appsflyer.rta.appserver.HttpRequest;
 import com.appsflyer.rta.appserver.HttpResponse;
 import com.appsflyer.rta.appserver.ServerConfig;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Tag("slow")
-class AsyncRequestHandlerTest
+class CompletableRequestHandlerTest
 {
   private static ServerConfig config;
   private EmbeddedChannel channel;
@@ -37,7 +37,7 @@ class AsyncRequestHandlerTest
   static void beforeAll()
   {
     config = mock(ServerConfig.class);
-    when(config.mode()).thenReturn(HandlerMode.ASYNC);
+    when(config.mode()).thenReturn(ExecutionMode.NON_BLOCKING);
     when(config.metricsCollector()).thenReturn(MetricsCollectorFactory.NOOP);
   }
   
@@ -61,7 +61,7 @@ class AsyncRequestHandlerTest
      */
     var latch = new CountDownLatch(1);
   
-    RequestHandler handler = new StubHandler(
+    StubHandler handler = new StubHandler(
         (request) -> HttpResponse.newInstance(
             200,
             (request.asString() + " world!").getBytes(UTF_8),
@@ -94,7 +94,7 @@ class AsyncRequestHandlerTest
     assertEquals("text/plain", response.headers().get(CONTENT_TYPE));
   }
   
-  class StubHandler implements RequestHandler
+  class StubHandler implements RequestHandler<HttpRequest, HttpResponse>
   {
     private final Function<? super HttpRequest, HttpResponse> task;
     private final CountDownLatch latch;

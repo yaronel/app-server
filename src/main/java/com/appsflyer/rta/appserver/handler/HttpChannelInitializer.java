@@ -4,7 +4,6 @@ import com.appsflyer.rta.appserver.ServerConfig;
 import com.appsflyer.rta.appserver.codec.FullHtmlRequestDecoder;
 import com.appsflyer.rta.appserver.codec.FullHtmlResponseEncoder;
 import com.appsflyer.rta.appserver.executor.DefaultExecutor;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -28,16 +27,14 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
   static final String APP_HANDLER = "app-handler";
   
   private final ServerConfig config;
-  private final ChannelInboundHandlerAdapter inboundHandler;
-  private EventExecutorGroup eventExecutors;
+  private EventExecutorGroup asyncExecutors;
   
   public HttpChannelInitializer(ServerConfig config)
   {
     this.config = config;
-    inboundHandler = RequestHandlerFactory.newInstance(config);
-    if (config.isBlockingIo()) {
-      eventExecutors =
-          DefaultExecutor.newEventExecutorGroup(config.blockingExecutorsConfig());
+    if (config.isAsyncHandler()) {
+      asyncExecutors =
+          DefaultExecutor.newEventExecutorGroup(config.asyncExecutorsConfig());
     }
   }
   
@@ -61,19 +58,19 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
             .addLast(REQUEST_DECODER, FullHtmlRequestDecoder.INSTANCE)
             .addLast(RESPONSE_ENCODER, FullHtmlResponseEncoder.INSTANCE);
   
-    if (eventExecutors != null) {
-      pipeline.addLast(eventExecutors, APP_HANDLER, inboundHandler);
+    if (asyncExecutors != null) {
+      pipeline.addLast(asyncExecutors, APP_HANDLER, RequestHandlerFactory.newInstance(config));
     }
     else {
-      pipeline.addLast(APP_HANDLER, inboundHandler);
+      pipeline.addLast(APP_HANDLER, RequestHandlerFactory.newInstance(config));
     }
   }
   
   public void shutdownExecutors()
   {
-    if (eventExecutors != null) {
+    if (asyncExecutors != null) {
       try {
-        eventExecutors.shutdownGracefully().sync();
+        asyncExecutors.shutdownGracefully().sync();
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }

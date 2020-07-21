@@ -8,13 +8,15 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleStateEvent;
 
+import java.util.concurrent.CompletableFuture;
+
 @SuppressWarnings("WeakerAccess")
-public class SyncRequestHandler extends ChannelInboundHandlerAdapter
+public class CompletableRequestHandler extends ChannelInboundHandlerAdapter
 {
   private final RequestHandler<HttpRequest, HttpResponse> requestHandler;
   private final MetricsCollector metricsCollector;
   
-  public SyncRequestHandler(
+  public CompletableRequestHandler(
       RequestHandler<HttpRequest, HttpResponse> requestHandler,
       MetricsCollector metricsCollector)
   {
@@ -27,33 +29,40 @@ public class SyncRequestHandler extends ChannelInboundHandlerAdapter
   {
     HttpRequest request = (HttpRequest) msg;
     Stopper timer = Stopper.newStartedInstance();
-    try {
-      HttpResponse response = requestHandler.apply(request);
-      metricsCollector.recordServiceLatency(timer.stop());
-      ctx.write(response, ctx.voidPromise());
-    } catch (RuntimeException ex) {
-      metricsCollector.recordServiceLatency(timer.stop());
-      exceptionCaught(ctx, ex);
-    } finally {
-      request.recycle();
-      timer.recycle();
-    }
+    
+    // Slightly long lambda is unavoidable here to maintain references in scope
+    //noinspection OverlyLongLambda
+    exec(request)
+        .handle((response, throwable) -> {
+          metricsCollector.recordServiceLatency(timer.stop());
+          if (throwable == null) {
+            ctx.writeAndFlush(response, ctx.voidPromise());
+          }
+          else {
+            exceptionCaught(ctx, throwable);
+          }
+          request.recycle();
+          timer.recycle();
+          //noinspection ReturnOfNull
+          return null;
+        });
   }
   
-  @Override
-  public void channelReadComplete(ChannelHandlerContext ctx)
+  private CompletableFuture<HttpResponse> exec(HttpRequest request)
   {
-    ctx.flush();
-    ctx.fireChannelReadComplete();
+    try {
+      return requestHandler.applyAsync(request);
+    } catch (RuntimeException ex) {
+      return CompletableFuture.failedFuture(ex);
+    }
   }
   
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
   {
     HandlerUtil.logException(cause);
-    ctx.write(HandlerUtil.createServerError());
+    ctx.writeAndFlush(HandlerUtil.createServerError(), ctx.voidPromise());
   }
-  
   
   @Override
   public void userEventTriggered(ChannelHandlerContext ctx, Object evt)

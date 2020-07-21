@@ -1,6 +1,6 @@
 package com.appsflyer.rta.appserver.handler;
 
-import com.appsflyer.rta.appserver.HandlerMode;
+import com.appsflyer.rta.appserver.ExecutionMode;
 import com.appsflyer.rta.appserver.ServerConfig;
 import com.appsflyer.rta.appserver.executor.EventExecutorConfig;
 import io.netty.channel.ChannelHandlerContext;
@@ -34,7 +34,7 @@ class HttpChannelInitializerTest
     
     config = mock(ServerConfig.class);
     when(config.writeTimeout()).thenReturn(Duration.ZERO);
-    when(config.mode()).thenReturn(HandlerMode.NON_BLOCKING);
+    when(config.mode()).thenReturn(ExecutionMode.NON_BLOCKING);
   }
   
   @AfterEach
@@ -82,7 +82,7 @@ class HttpChannelInitializerTest
   @Test
   void appHandlerUsesDefaultExecutorWhenNotBlocking()
   {
-    when(config.isBlockingIo()).thenReturn(false);
+    when(config.isAsyncHandler()).thenReturn(false);
     new HttpChannelInitializer(config).initChannel(mockServerChannel);
     
     ChannelHandlerContext serverCodecContext = mockServerChannel.pipeline().context(SERVER_CODEC);
@@ -95,13 +95,13 @@ class HttpChannelInitializerTest
   @Test
   void createsNewExecutorInBlockingMode()
   {
-    when(config.isBlockingIo()).thenReturn(true);
-    when(config.blockingExecutorsConfig()).thenReturn(EventExecutorConfig.defaultConfig());
+    when(config.isAsyncHandler()).thenReturn(true);
+    when(config.asyncExecutorsConfig()).thenReturn(EventExecutorConfig.defaultConfig());
     new HttpChannelInitializer(config).initChannel(mockServerChannel);
-    
+  
     ChannelHandlerContext serverCodecContext = mockServerChannel.pipeline().context(SERVER_CODEC);
     ChannelHandlerContext appHandlerContext = mockServerChannel.pipeline().context(APP_HANDLER);
-    
+  
     assertEquals(mockServerChannel.eventLoop(), serverCodecContext.executor());
     assertNotEquals(serverCodecContext.executor(), appHandlerContext.executor());
   }

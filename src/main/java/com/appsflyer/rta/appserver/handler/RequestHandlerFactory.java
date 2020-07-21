@@ -10,11 +10,12 @@ public final class RequestHandlerFactory
   public static ChannelInboundHandlerAdapter newInstance(ServerConfig config)
   {
     switch (config.mode()) {
-      case BLOCKING:
-      case NON_BLOCKING:
+      case SYNC:
         return new SyncRequestHandler(config.requestHandler(), config.metricsCollector());
       case ASYNC:
         return new AsyncRequestHandler(config.requestHandler(), config.metricsCollector());
+      case NON_BLOCKING:
+        return new CompletableRequestHandler(config.requestHandler(), config.metricsCollector());
     }
     throw new UnsupportedOperationException(String.format("Unsupported mode %s", config.mode()));
   }

@@ -1,16 +1,10 @@
 package com.appsflyer.rta.appserver.handler;
 
-import com.appsflyer.rta.appserver.HttpRequest;
-import com.appsflyer.rta.appserver.HttpResponse;
-
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 
-public interface RequestHandler extends Function<HttpRequest, HttpResponse>
+public interface RequestHandler<T, S>
 {
-  @SuppressWarnings("AbstractMethodOverridesAbstractMethod")
-  @Override
-  HttpResponse apply(HttpRequest request);
+  S apply(T request);
   
-  CompletableFuture<HttpResponse> applyAsync(HttpRequest request);
+  CompletableFuture<S> applyAsync(T request);
 }
