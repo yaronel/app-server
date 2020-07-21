@@ -100,10 +100,8 @@ public class ServerConfig
     
     public Builder()
     {
-      this(new ServerConfig());
+      instance = new ServerConfig();
     }
-    
-    private Builder(ServerConfig instance) {this.instance = instance;}
     
     public Builder setPort(int port)
     {
