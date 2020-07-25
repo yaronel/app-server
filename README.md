@@ -1,4 +1,4 @@
-# RTA Application Server
+# Application Server
 
 Minimalistic API over [Netty](https://netty.io) HTTP server that makes creating 
 simple application servers easy.
