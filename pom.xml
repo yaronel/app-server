@@ -4,10 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.appsflyer.rta</groupId>
+    <groupId>com.github.yaronel</groupId>
     <artifactId>app-server</artifactId>
     <version>0.1.0-SNAPSHOT</version>
-    <name>RTA Application Server</name>
+    <name>Application Server</name>
+    <licenses>
+        <license>
+            <name>Apache 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
     <description>Http application server built on top of Netty</description>
     <packaging>jar</packaging>
 
@@ -16,6 +22,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <netty.version>4.1.50.Final</netty.version>
         <junit.jupiter.version>5.6.2</junit.jupiter.version>
+        <slf4j.version>1.7.30</slf4j.version>
+        <dropwizard.version>4.1.11</dropwizard.version>
     </properties>
 
     <repositories>
@@ -29,26 +37,7 @@
                 <enabled>true</enabled>
             </releases>
         </repository>
-        <repository>
-            <id>central</id>
-            <name>AppsFlyer Artifactory</name>
-            <url>https://artifactory.appsflyer.com/artifactory/maven/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
     </repositories>
-
-    <distributionManagement>
-        <repository>
-            <id>central</id>
-            <!--suppress UnresolvedMavenProperty -->
-            <url>${env.MAVEN_REPO_URL}</url>
-        </repository>
-    </distributionManagement>
 
     <dependencies>
         <dependency>
@@ -56,15 +45,16 @@
             <artifactId>netty-all</artifactId>
             <version>${netty.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-core -->
         <dependency>
-            <groupId>com.appsflyer</groupId>
-            <artifactId>af-metrics-ng</artifactId>
-            <version>1.1.1</version>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>${dropwizard.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.30</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
