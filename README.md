@@ -5,18 +5,18 @@ simple application servers easy.
 
 ### API
 
-The library abstracts the creation of an HTTP server using a server configuration  
-builder - [ServerConfig.Builder](src/main/java/com/github/yaronel/appserver/ServerConfig.java).
+The library abstracts the creation of an HTTP server using a server configuration builder - 
+[ServerConfig.Builder](src/main/java/com/github/yaronel/appserver/ServerConfig.java).
 The configuration is used to initialise an implementation of the 
 [HttpServer](src/main/java/com/github/yaronel/appserver/HttpServer.java) interface 
 that lets the user start and stop the server. Part of being minimalistic means the 
-implementation is opinionated, and there isn't much left for the user to configure 
+implementation is opinionated, so there isn't a lot the user can configure 
 when it comes to codecs that can control lower level aspects of the request / response flow.
 
 ### RequestHandler
 
 The main "ingredient" the user provides is an implementation of the 
-[RequestHandler](src/main/java/com/github/yaronel/appserver/handler/RequestHandler.java) 
+[UserRequestHandler](src/main/java/com/github/yaronel/appserver/handler/UserRequestHandler.java) 
 interface. Users may implement either `apply` or `applyAsyc`, depending on the 
 [ExecutionMode](src/main/java/com/github/yaronel/appserver/ExecutionMode.java) 
 they configure, with the application business logic. 
@@ -24,15 +24,15 @@ they configure, with the application business logic.
 ### Execution Modes
 
 There are three execution-modes that describe the handler will be executed:
-- `ExecutionMode.NON_BLOCKING` - The handling of the request is non-blocking in nature, and as
+- `NON_BLOCKING` - The handling of the request is non-blocking in nature, and as
 such the handler will return a `CompletableFuture` of an `HttpResponse`. 
 The handler will be called on the IO event loop, and therefor is expected not 
 to block the thread.
-- `ExecutionMode.SYNC` - The handler will be called on the IO event loop thread and
+- `SYNC` - The handler will be called on the IO event loop thread and
 is expected to not block the calling thread. "Non blocking" refers to CPU bound
 processing (as opposed to IO processing), that doesn't take a "long time" to
 complete (an order of magnitude of less than 1 millisecond).
-- `ExecutionMode.ASYNC` - The handler will be called on a separate worker thread pool. 
+- `ASYNC` - The handler will be called on a separate worker thread pool. 
 It is recommended to keep blocking code to a bare minimum when throughput and latency are important.
 
 ### Metrics 
