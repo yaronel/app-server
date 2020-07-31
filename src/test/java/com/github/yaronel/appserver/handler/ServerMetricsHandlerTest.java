@@ -1,14 +1,12 @@
 package com.github.yaronel.appserver.handler;
 
-import com.github.yaronel.appserver.metrics.ManualTimer;
+import com.github.yaronel.appserver.metrics.ManualClock;
 import com.github.yaronel.appserver.metrics.MetricsCollector;
 import com.github.yaronel.appserver.metrics.MetricsCollectorImpl;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 import static com.github.yaronel.appserver.TestUtil.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,31 +15,28 @@ import static org.mockito.Mockito.*;
 class ServerMetricsHandlerTest
 {
   private EmbeddedChannel channel;
-  private ManualTimer receiveTimer;
-  private ManualTimer sendTimer;
+  private ManualClock timeProvider;
   private MetricsCollector collector;
   
   @BeforeEach
   void setUp()
   {
     channel = new EmbeddedChannel();
-    AtomicLong latency = new AtomicLong(0);
-    receiveTimer = new ManualTimer(latency::getAndIncrement);
-    sendTimer = new ManualTimer(latency::getAndIncrement);
+    timeProvider = new ManualClock();
+    // After the first time it's called, advance the clock by 1.
+    timeProvider.onTime(instance -> {
+      if (instance.calls() > 0) {
+        instance.advanceClock();
+      }
+    });
     collector = mock(MetricsCollectorImpl.class);
-    channel.pipeline()
-           .addLast(new ServerMetricsHandler(collector, receiveTimer, sendTimer));
+    channel.pipeline().addLast(new ServerMetricsHandler(collector, timeProvider));
   }
   
   @AfterEach
   void tearDown()
   {
     channel.finishAndReleaseAll();
-  }
-  
-  private void incrementTimer()
-  {
-    receiveTimer.tick();
   }
   
   @Test
@@ -57,26 +52,29 @@ class ServerMetricsHandlerTest
   void testReceiveLatencyOfMultipleHttpRequestParts()
   {
     assertTrue(channel.writeInbound(partialRequest()));
-    incrementTimer(); // 2
-    assertTrue(channel.writeInbound(partialRequest()));
-    incrementTimer(); // 3
-    assertTrue(channel.writeInbound(partialRequest()));
-    incrementTimer(); // 4
+    timeProvider.advanceClock(5); // 5
+    assertTrue(channel.writeInbound(bufferContent("foo")));
+    timeProvider.advanceClock(3); // 8
+    assertTrue(channel.writeInbound(bufferContent("bar")));
+    timeProvider.advanceClock(7); // 15
     assertTrue(channel.writeInbound(lastHttpContent("")));
-    
+    // Clock should now be on 16
+    timeProvider.advanceClock(); // Should not have an affect
+  
     channel.readInbound();
-    verify(collector).recordReceiveLatency(4L);
+    verify(collector).recordReceiveLatency(16L);
   }
   
   @Test
   void testReceiveLatencyOfIncompleteRequest()
   {
     assertTrue(channel.writeInbound(partialRequest()));
-    incrementTimer(); // 2
-    assertTrue(channel.writeInbound(partialRequest()));
-    
+    timeProvider.advanceClock(); // 1
+    assertTrue(channel.writeInbound(bufferContent("foo")));
+    timeProvider.advanceClock(); // 2
+  
     channel.readInbound();
-    
+  
     verify(collector, times(0)).recordReceiveLatency(anyLong());
   }
   
@@ -84,6 +82,7 @@ class ServerMetricsHandlerTest
   void testSendLatencyOfFullHttpResponse()
   {
     assertTrue(channel.writeOutbound(responseWithContent("")));
+    timeProvider.advanceClock(10); // Should not have an effect
     channel.readOutbound();
     
     verify(collector).recordSendLatency(1L);
@@ -92,35 +91,57 @@ class ServerMetricsHandlerTest
   @Test
   void testSendLatencyOfMultipleHttpResponseParts()
   {
+    timeProvider.advanceClock(); // 1
+  
     assertTrue(channel.writeOutbound(partialResponse()));
-    assertTrue(channel.writeOutbound(partialResponse()));
-    assertTrue(channel.writeOutbound(partialResponse()));
+    timeProvider.advanceClock(10); // 11
+  
+    assertTrue(channel.writeOutbound(bufferContent("foo")));
+    timeProvider.advanceClock(6); // 17
+    timeProvider.advanceClock(3); // 20
+  
+    assertTrue(channel.writeOutbound(bufferContent("bar")));
+    timeProvider.advanceClock(4); // 24
+  
     assertTrue(channel.writeOutbound(lastHttpContent("")));
-    
+    // Clock should be on 25
+  
+    timeProvider.advanceClock(20); // Should not have an effect
+  
     channel.readOutbound();
-    
-    verify(collector).recordSendLatency(1L);
+  
+    verify(collector).recordSendLatency(24L); // 25 end - 1 start
   }
   
   @Test
   void testSendLatencyOfIncompleteResponse()
   {
+    timeProvider.advanceClock(10); // 10
     assertTrue(channel.writeOutbound(partialResponse()));
-    assertTrue(channel.writeOutbound(partialResponse()));
-    assertTrue(channel.writeOutbound(partialResponse()));
-    
+    assertTrue(channel.writeOutbound(bufferContent("foo")));
+  
+    timeProvider.advanceClock(); // 12
+  
+    assertTrue(channel.writeOutbound(bufferContent("foo")));
+  
+    timeProvider.advanceClock(); // 13
+  
     channel.readOutbound();
-    
+  
     verify(collector, times(0)).recordSendLatency(anyLong());
   }
   
   @Test
-  void testResponseLatencyOfFullHttpResponse()
+  void testFullFlowLatencies_receive_send_response()
   {
-    assertTrue(channel.writeInbound(requestWithContent("")));
-    assertTrue(channel.writeOutbound(responseWithContent("")));
+    assertTrue(channel.writeInbound(requestWithContent(""))); // Receive = 1, Clock = 1
+    timeProvider.advanceClock(5); // Clock = 6
+    assertTrue(channel.writeOutbound(responseWithContent(""))); // Send = 1, Response = 2, Clock = 9
+    timeProvider.advanceClock(); // Clock = 10
     channel.readOutbound();
     
-    verify(collector).recordResponseLatency(1L);
+    verify(collector).recordReceiveLatency(1L);
+    verify(collector).recordSendLatency(1L);
+    verify(collector).recordResponseLatency(2L);
   }
 }

@@ -1,9 +1,8 @@
 package com.github.yaronel.appserver.handler;
 
-import com.github.yaronel.appserver.Recyclable;
 import com.github.yaronel.appserver.metrics.MetricsCollector;
-import com.github.yaronel.appserver.metrics.Stopper;
-import com.github.yaronel.appserver.metrics.Timer;
+import com.github.yaronel.appserver.metrics.SystemClock;
+import com.github.yaronel.appserver.metrics.TimeProvider;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufHolder;
 import io.netty.channel.ChannelDuplexHandler;
@@ -18,22 +17,22 @@ import io.netty.util.concurrent.Future;
 public class ServerMetricsHandler extends ChannelDuplexHandler
 {
   private final MetricsCollector metricsCollector;
-  private final Timer receiveLatency;
-  private final Timer sendLatency;
+  private final TimeProvider clock;
   private long bytesReceived;
   private long bytesSent;
+  private long receiveLatency;
+  private long sendLatency;
   
   
-  ServerMetricsHandler(MetricsCollector metricsCollector, Timer receiveLatency, Timer sendLatency)
+  ServerMetricsHandler(MetricsCollector metricsCollector, TimeProvider clock)
   {
     this.metricsCollector = metricsCollector;
-    this.receiveLatency = receiveLatency;
-    this.sendLatency = sendLatency;
+    this.clock = clock;
   }
   
   ServerMetricsHandler(MetricsCollector metricsCollector)
   {
-    this(metricsCollector, Stopper.newInstance(), Stopper.newInstance());
+    this(metricsCollector, new SystemClock());
   }
   
   @Override
@@ -44,7 +43,7 @@ public class ServerMetricsHandler extends ChannelDuplexHandler
         ctx.write(msg, promise);
         return;
       }
-      sendLatency.start();
+      sendLatency = clock.time();
     }
     
     if (msg instanceof ByteBufHolder) {
@@ -61,25 +60,11 @@ public class ServerMetricsHandler extends ChannelDuplexHandler
     ctx.write(msg, promise);
   }
   
-  private void sumMetrics(Future<? super Void> future)
-  {
-    metricsCollector.recordSendLatency(sendLatency.stop());
-    if (receiveLatency.elapsed() == 0) {
-      metricsCollector.recordResponseLatency(sendLatency.elapsed());
-    }
-    else {
-      metricsCollector.recordResponseLatency(receiveLatency.stop());
-    }
-    metricsCollector.markSentBytes(bytesSent);
-    metricsCollector.markSuccessHit();
-    bytesSent = 0;
-  }
-  
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg)
   {
     if (msg instanceof HttpRequest) {
-      receiveLatency.start();
+      receiveLatency = clock.time();
     }
     
     if (msg instanceof ByteBufHolder) {
@@ -90,7 +75,7 @@ public class ServerMetricsHandler extends ChannelDuplexHandler
     }
     
     if (msg instanceof LastHttpContent) {
-      metricsCollector.recordReceiveLatency(receiveLatency.stop());
+      metricsCollector.recordReceiveLatency(clock.time() - receiveLatency);
       metricsCollector.markBytesReceived(bytesReceived);
       metricsCollector.markHit();
       bytesReceived = 0;
@@ -106,10 +91,17 @@ public class ServerMetricsHandler extends ChannelDuplexHandler
     ctx.close();
   }
   
-  @Override
-  public void handlerRemoved(ChannelHandlerContext ctx)
+  private void sumMetrics(Future<? super Void> future)
   {
-    ((Recyclable) receiveLatency).recycle();
-    ((Recyclable) sendLatency).recycle();
+    metricsCollector.recordSendLatency(clock.time() - sendLatency);
+    if (receiveLatency == 0) {
+      metricsCollector.recordResponseLatency(clock.time() - sendLatency);
+    }
+    else {
+      metricsCollector.recordResponseLatency(clock.time() - receiveLatency);
+    }
+    metricsCollector.markSentBytes(bytesSent);
+    metricsCollector.markSuccessHit();
+    bytesSent = 0;
   }
 }

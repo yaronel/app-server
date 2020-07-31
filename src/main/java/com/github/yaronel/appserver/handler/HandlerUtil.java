@@ -10,7 +10,7 @@ import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_PLAIN;
-
+//@todo Eliminate this class
 final class HandlerUtil
 {
   private static final Logger logger = LoggerFactory.getLogger(HandlerUtil.class);
@@ -23,6 +23,7 @@ final class HandlerUtil
   
   static void logException(Throwable cause)
   {
+    //@todo Look into using Markers to avoid mixing the log output with other messages from other threads
     logger.error("Unhandled exception", cause);
     Throwable[] suppressed = cause.getSuppressed();
     if (suppressed.length > 0) {

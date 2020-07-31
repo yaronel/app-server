@@ -1,5 +1,6 @@
 package com.github.yaronel.appserver;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledHeapByteBuf;
@@ -34,7 +35,7 @@ public final class TestUtil
         HTTP_1_1,
         POST,
         "http://localhost",
-        Unpooled.wrappedBuffer(content.getBytes(UTF_8)));
+        bufferContent(content));
   }
   
   public static DefaultHttpRequest partialRequest()
@@ -44,7 +45,7 @@ public final class TestUtil
   
   public static LastHttpContent lastHttpContent(String content)
   {
-    return new DefaultLastHttpContent(Unpooled.wrappedBuffer(content.getBytes(UTF_8)));
+    return new DefaultLastHttpContent(bufferContent(content));
   }
   
   public static FullHttpResponse responseWithContent(String content)
@@ -52,12 +53,17 @@ public final class TestUtil
     return new DefaultFullHttpResponse(
         HTTP_1_1,
         HttpResponseStatus.OK,
-        Unpooled.wrappedBuffer(content.getBytes(UTF_8)));
+        bufferContent(content));
   }
   
   public static DefaultHttpResponse partialResponse()
   {
     return new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
+  }
+  
+  public static ByteBuf bufferContent(String content)
+  {
+    return Unpooled.wrappedBuffer(content.getBytes(UTF_8));
   }
   
 }
