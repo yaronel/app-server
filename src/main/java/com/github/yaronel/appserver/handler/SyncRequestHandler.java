@@ -6,18 +6,19 @@ import com.github.yaronel.appserver.metrics.MetricsCollector;
 import com.github.yaronel.appserver.metrics.SystemClock;
 import com.github.yaronel.appserver.metrics.TimeProvider;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.timeout.IdleStateEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("WeakerAccess")
-public class SyncRequestHandler extends ChannelInboundHandlerAdapter
+public class SyncRequestHandler extends RequestHandlerAdapter
 {
-  private final RequestHandler<HttpRequest, HttpResponse> requestHandler;
+  private static final Logger logger = LoggerFactory.getLogger(SyncRequestHandler.class.getName());
+  private final UserRequestHandler<HttpRequest, HttpResponse> requestHandler;
   private final MetricsCollector metricsCollector;
   private final TimeProvider clock;
   
   public SyncRequestHandler(
-      RequestHandler<HttpRequest, HttpResponse> requestHandler,
+      UserRequestHandler<HttpRequest, HttpResponse> requestHandler,
       MetricsCollector metricsCollector)
   {
     this.requestHandler = requestHandler;
@@ -56,18 +57,8 @@ public class SyncRequestHandler extends ChannelInboundHandlerAdapter
   }
   
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+  public Logger logger()
   {
-    HandlerUtil.logException(cause);
-    ctx.write(HandlerUtil.createServerError());
-  }
-  
-  
-  @Override
-  public void userEventTriggered(ChannelHandlerContext ctx, Object evt)
-  {
-    if (evt instanceof IdleStateEvent) {
-      ctx.close();
-    }
+    return logger;
   }
 }

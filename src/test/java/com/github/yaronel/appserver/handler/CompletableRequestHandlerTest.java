@@ -94,11 +94,11 @@ class CompletableRequestHandlerTest
     assertEquals("text/plain", response.headers().get(CONTENT_TYPE));
   }
   
-  class StubHandler implements RequestHandler<HttpRequest, HttpResponse>
+  class StubHandler implements UserRequestHandler<HttpRequest, HttpResponse>
   {
     private final Function<? super HttpRequest, HttpResponse> task;
     private final CountDownLatch latch;
-    
+  
     StubHandler(Function<? super HttpRequest, HttpResponse> task, CountDownLatch latch)
     {
       this.task = task;

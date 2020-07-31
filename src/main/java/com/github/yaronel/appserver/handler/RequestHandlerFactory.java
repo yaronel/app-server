@@ -11,9 +11,8 @@ public final class RequestHandlerFactory
   {
     switch (config.mode()) {
       case SYNC:
-        return new SyncRequestHandler(config.requestHandler(), config.metricsCollector());
       case ASYNC:
-        return new AsyncRequestHandler(config.requestHandler(), config.metricsCollector());
+        return new SyncRequestHandler(config.requestHandler(), config.metricsCollector());
       case NON_BLOCKING:
         return new CompletableRequestHandler(config.requestHandler(), config.metricsCollector());
     }

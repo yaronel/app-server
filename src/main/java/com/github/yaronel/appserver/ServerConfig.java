@@ -2,7 +2,7 @@ package com.github.yaronel.appserver;
 
 import com.github.yaronel.appserver.executor.EventExecutorConfig;
 import com.github.yaronel.appserver.executor.ExecutorConfig;
-import com.github.yaronel.appserver.handler.RequestHandler;
+import com.github.yaronel.appserver.handler.UserRequestHandler;
 import com.github.yaronel.appserver.metrics.MetricsCollector;
 import com.github.yaronel.appserver.metrics.MetricsCollectorFactory;
 
@@ -20,7 +20,7 @@ public class ServerConfig
   private int port;
   private ExecutorConfig asyncExecutorsConfig;
   private ExecutorConfig childGroupConfig;
-  private RequestHandler<HttpRequest, HttpResponse> requestHandler;
+  private UserRequestHandler<HttpRequest, HttpResponse> requestHandler;
   private MetricsCollector metricsCollector;
   private boolean compress;
   private int maxContentLength = 1048576;
@@ -78,7 +78,7 @@ public class ServerConfig
     return mode;
   }
   
-  public RequestHandler<HttpRequest, HttpResponse> requestHandler()
+  public UserRequestHandler<HttpRequest, HttpResponse> requestHandler()
   {
     return requestHandler;
   }
@@ -167,7 +167,7 @@ public class ServerConfig
     }
   
     public Builder setRequestHandler(
-        RequestHandler<HttpRequest, HttpResponse> requestHandler)
+        UserRequestHandler<HttpRequest, HttpResponse> requestHandler)
     {
       Objects.requireNonNull(requestHandler);
       instance.requestHandler = requestHandler;

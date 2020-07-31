@@ -2,7 +2,7 @@ package com.github.yaronel.appserver.handler;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface RequestHandler<T, S>
+public interface UserRequestHandler<T, S>
 {
   S apply(T request);
   

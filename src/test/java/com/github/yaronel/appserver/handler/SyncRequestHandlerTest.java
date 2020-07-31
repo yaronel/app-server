@@ -90,7 +90,7 @@ class SyncRequestHandlerTest
     response.recycle();
   }
   
-  private static RequestHandler<HttpRequest, HttpResponse> exceptionalStubHandler()
+  private static UserRequestHandler<HttpRequest, HttpResponse> exceptionalStubHandler()
   {
     return new StubHandler()
     {
@@ -102,7 +102,7 @@ class SyncRequestHandlerTest
     };
   }
   
-  static class StubHandler implements RequestHandler<HttpRequest, HttpResponse>
+  static class StubHandler implements UserRequestHandler<HttpRequest, HttpResponse>
   {
     
     @Override

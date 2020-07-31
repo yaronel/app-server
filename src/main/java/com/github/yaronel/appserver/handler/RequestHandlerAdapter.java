@@ -1,40 +1,59 @@
 package com.github.yaronel.appserver.handler;
 
 import com.github.yaronel.appserver.HttpResponse;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AsciiString;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.StringJoiner;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_PLAIN;
-//@todo Eliminate this class
-final class HandlerUtil
+
+public abstract class RequestHandlerAdapter extends ChannelInboundHandlerAdapter
 {
-  private static final Logger logger = LoggerFactory.getLogger(HandlerUtil.class);
   private static final byte[] INTERNAL_SERVER_ERROR =
       AsciiString.of("Internal Server Error").toByteArray();
   private static final Map<String, String> INTERNAL_SERVER_ERROR_HEADERS =
       Collections.unmodifiableMap(Map.of(CONTENT_TYPE.toString(), TEXT_PLAIN.toString()));
   
-  private HandlerUtil() {}
+  abstract Logger logger();
   
-  static void logException(Throwable cause)
+  void logException(Throwable cause)
   {
-    //@todo Look into using Markers to avoid mixing the log output with other messages from other threads
+    Logger logger = logger();
     logger.error("Unhandled exception", cause);
     Throwable[] suppressed = cause.getSuppressed();
     if (suppressed.length > 0) {
-      logger.error("Printing suppressed exceptions:");
+      var msg = new StringJoiner(System.lineSeparator());
+      msg.add("Printing suppressed exceptions:");
       for (int i = 0; i < suppressed.length; i++) {
-        logger.error("Suppressed {}/{}: {}", i + 1, suppressed.length, suppressed[i].getMessage());
+        msg.add(String.format("Suppressed %d/%d: %s", i + 1, suppressed.length, suppressed[i].getMessage()));
       }
+      logger.error(msg.toString());
     }
   }
   
-  static HttpResponse createServerError()
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+  {
+    logException(cause);
+    ctx.writeAndFlush(createServerError());
+  }
+  
+  @Override
+  public void userEventTriggered(ChannelHandlerContext ctx, Object evt)
+  {
+    if (evt instanceof IdleStateEvent) {
+      ctx.close();
+    }
+  }
+  
+  private HttpResponse createServerError()
   {
     return HttpResponse.newInstance(
         500,
