@@ -28,17 +28,22 @@ public class SyncRequestHandler extends ChannelInboundHandlerAdapter
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg)
   {
-    //@todo look in to calling recordServiceLatency once.
     HttpRequest request = (HttpRequest) msg;
+    HttpResponse response = null;
+    Exception error = null;
     long start = clock.time();
     try {
-      HttpResponse response = requestHandler.apply(request);
-      metricsCollector.recordServiceLatency(clock.time() - start);
-      ctx.write(response, ctx.voidPromise());
+      response = requestHandler.apply(request);
     } catch (RuntimeException ex) {
-      metricsCollector.recordServiceLatency(clock.time() - start);
-      exceptionCaught(ctx, ex);
+      error = ex;
     } finally {
+      metricsCollector.recordServiceLatency(clock.time() - start);
+      if (error != null) {
+        exceptionCaught(ctx, error);
+      }
+      else {
+        ctx.write(response, ctx.voidPromise());
+      }
       request.recycle();
     }
   }
